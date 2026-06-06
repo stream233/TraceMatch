@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text;
+using System.Xml.Linq;
 using ClosedXML.Excel;
 using ExcelDataReader;
 using TraceMatch.Models;
@@ -16,6 +17,7 @@ public sealed class FileImportService
             ".xlsx" or ".xlsm" => ReadOpenXmlExcel(path),
             ".xls" => ReadBinaryExcel(path),
             ".csv" or ".txt" => ReadText(path),
+            ".xml" => ReadXml(path),
             _ => throw new NotSupportedException($"Unsupported file format: {extension}")
         };
     }
@@ -133,7 +135,7 @@ public sealed class FileImportService
 
     private static ImportTable ReadText(string path)
     {
-        var lines = File.ReadLines(path)
+        var lines = ReadAllLines(path)
             .Where(line => !string.IsNullOrWhiteSpace(line))
             .ToList();
         if (lines.Count == 0)
@@ -142,9 +144,72 @@ public sealed class FileImportService
         }
 
         var delimiter = DetectDelimiter(lines[0]);
+        if (lines[0].TrimStart().StartsWith('$'))
+        {
+            return ReadMasSafeShipmentText(lines, delimiter);
+        }
+
         var headers = SplitLine(lines[0], delimiter).Select(h => h.Trim()).ToList();
+        var rows = RowsFromDelimitedLines(lines.Skip(1), headers, delimiter);
+        return new ImportTable { Headers = headers, Rows = rows };
+    }
+
+    private static ImportTable ReadMasSafeShipmentText(IReadOnlyList<string> lines, char delimiter)
+    {
+        var headers = new[]
+        {
+            ImportFields.TraceCode,
+            ImportFields.DrugName,
+            ImportFields.BatchNumber,
+            ImportFields.ExpiryDate
+        };
+
+        var rows = RowsFromDelimitedLines(
+            lines.Where(line =>
+            {
+                var value = line.TrimStart();
+                return !value.StartsWith('$') && !value.StartsWith('#');
+            }),
+            headers,
+            delimiter);
+        return new ImportTable { Headers = headers, Rows = rows };
+    }
+
+    private static ImportTable ReadXml(string path)
+    {
+        var document = XDocument.Load(path);
+        var headers = new[]
+        {
+            ImportFields.TraceCode,
+            ImportFields.ScannedAt,
+            "CorpOrderID",
+            "Actor",
+            "FromCorpID",
+            "ToCorpID",
+            "AssCorpID"
+        };
+
+        var rows = document
+            .Descendants("Data")
+            .Select(element => new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [ImportFields.TraceCode] = (string?)element.Attribute("Code") ?? string.Empty,
+                [ImportFields.ScannedAt] = (string?)element.Attribute("ActDate") ?? string.Empty,
+                ["CorpOrderID"] = (string?)element.Attribute("CorpOrderID") ?? string.Empty,
+                ["Actor"] = (string?)element.Attribute("Actor") ?? string.Empty,
+                ["FromCorpID"] = (string?)element.Attribute("FromCorpID") ?? string.Empty,
+                ["ToCorpID"] = (string?)element.Attribute("ToCorpID") ?? string.Empty,
+                ["AssCorpID"] = (string?)element.Attribute("AssCorpID") ?? string.Empty
+            })
+            .ToList();
+
+        return new ImportTable { Headers = headers, Rows = rows };
+    }
+
+    private static IReadOnlyList<Dictionary<string, string>> RowsFromDelimitedLines(IEnumerable<string> lines, IReadOnlyList<string> headers, char delimiter)
+    {
         var rows = new List<Dictionary<string, string>>();
-        foreach (var line in lines.Skip(1))
+        foreach (var line in lines)
         {
             var values = SplitLine(line, delimiter).ToList();
             var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -155,7 +220,27 @@ public sealed class FileImportService
             rows.Add(dict);
         }
 
-        return new ImportTable { Headers = headers, Rows = rows };
+        return rows;
+    }
+
+    private static IReadOnlyList<string> ReadAllLines(string path)
+    {
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        var bytes = File.ReadAllBytes(path);
+        var utf8 = new UTF8Encoding(false, true);
+        try
+        {
+            return SplitLines(utf8.GetString(bytes));
+        }
+        catch (DecoderFallbackException)
+        {
+            return SplitLines(Encoding.GetEncoding("GB18030").GetString(bytes));
+        }
+    }
+
+    private static IReadOnlyList<string> SplitLines(string text)
+    {
+        return text.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
     }
 
     private static char DetectDelimiter(string header)
@@ -208,12 +293,12 @@ public sealed class FileImportService
 
 public static class ImportFields
 {
-    public const string TraceCode = "追溯码";
-    public const string DrugName = "药品名称";
-    public const string Specification = "规格";
-    public const string BatchNumber = "批号";
-    public const string Manufacturer = "生产企业";
-    public const string ExpiryDate = "有效期";
-    public const string Quantity = "数量";
-    public const string ScannedAt = "扫描时间";
+    public const string TraceCode = "\u8ffd\u6eaf\u7801";
+    public const string DrugName = "\u836f\u54c1\u540d\u79f0";
+    public const string Specification = "\u89c4\u683c";
+    public const string BatchNumber = "\u6279\u53f7";
+    public const string Manufacturer = "\u751f\u4ea7\u4f01\u4e1a";
+    public const string ExpiryDate = "\u6709\u6548\u671f";
+    public const string Quantity = "\u6570\u91cf";
+    public const string ScannedAt = "\u626b\u63cf\u65f6\u95f4";
 }

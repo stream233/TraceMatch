@@ -269,7 +269,7 @@ public sealed class MainViewModel : ViewModelBase
     {
         var dialog = new OpenFileDialog
         {
-            Filter = "导入文件|*.csv;*.txt;*.xlsx;*.xlsm;*.xls|CSV|*.csv|文本|*.txt|Excel|*.xlsx;*.xlsm;*.xls",
+            Filter = "导入文件|*.csv;*.txt;*.xlsx;*.xlsm;*.xls;*.xml|CSV|*.csv|文本|*.txt|Excel|*.xlsx;*.xlsm;*.xls|XML|*.xml",
             Multiselect = false
         };
         return dialog.ShowDialog() == true ? dialog.FileName : null;
