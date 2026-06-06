@@ -143,6 +143,17 @@
                         <Setter Property="VerticalAlignment" Value="Center"/>
                         <Setter Property="TextAlignment" Value="Center"/>
                     </Style>
+                    <Style TargetType="TextBox" x:Key="CopyableCellText">
+                        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                        <Setter Property="VerticalAlignment" Value="Stretch"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                        <Setter Property="VerticalContentAlignment" Value="Center"/>
+                        <Setter Property="TextAlignment" Value="Center"/>
+                        <Setter Property="IsReadOnly" Value="True"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="Padding" Value="0"/>
+                    </Style>
                     <Style TargetType="DataGridCell">
                         <Setter Property="HorizontalContentAlignment" Value="Center"/>
                         <Setter Property="VerticalContentAlignment" Value="Center"/>
@@ -158,7 +169,13 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTextColumn Header="追溯码" Binding="{Binding TraceCode}" Width="2.3*" ElementStyle="{StaticResource CenteredCellText}"/>
+                    <DataGridTemplateColumn Header="追溯码" Width="2.3*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox Text="{Binding TraceCode}" Style="{StaticResource CopyableCellText}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
                     <DataGridTextColumn Header="药品名称" Binding="{Binding DrugName}" Width="1.8*" ElementStyle="{StaticResource CenteredCellText}"/>
                     <DataGridTextColumn Header="规格" Binding="{Binding Specification}" Width="1.1*" ElementStyle="{StaticResource CenteredCellText}"/>
                     <DataGridTextColumn Header="批号" Binding="{Binding BatchNumber}" Width="1.1*" ElementStyle="{StaticResource CenteredCellText}"/>

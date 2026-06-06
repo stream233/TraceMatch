@@ -22,6 +22,7 @@ public sealed class MainViewModel : ViewModelBase
     private IReadOnlyList<ComparisonResult>? _pendingResults;
     private string? _pendingSupplier;
     private bool _hasUnsavedRecords;
+    private readonly HashSet<long> _unsavedOrderIds = new();
     private SummaryStats _stats = new();
     private string _orderNumber = GenerateOrderNumber();
     private string _supplier = string.Empty;
@@ -130,9 +131,11 @@ public sealed class MainViewModel : ViewModelBase
 
     private async Task CreateOrderAsync()
     {
+        await DiscardCurrentUnsavedOrderAsync();
+
         if (string.IsNullOrWhiteSpace(OrderNumber) || string.IsNullOrWhiteSpace(Operator))
         {
-            MessageBox.Show("验收单号、供应商、操作员不能为空。", "新建验收单", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show("验收单号、操作员不能为空。", "新建验收单", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
@@ -163,6 +166,7 @@ public sealed class MainViewModel : ViewModelBase
         }
 
         Orders.Insert(0, order);
+        _unsavedOrderIds.Add(order.Id);
         CurrentOrder = order;
         OrderNumber = GenerateOrderNumber();
         Remark = string.Empty;
@@ -227,9 +231,26 @@ public sealed class MainViewModel : ViewModelBase
         }
 
         await _repository.DeleteOrderAsync(order.Id);
+        _unsavedOrderIds.Remove(order.Id);
         Orders.Remove(order);
         CurrentOrder = null;
         StatusMessage = "\u9a8c\u6536\u5355\u5df2\u5220\u9664\u3002";
+    }
+
+    private async Task DiscardCurrentUnsavedOrderAsync()
+    {
+        if (CurrentOrder is null || !_unsavedOrderIds.Contains(CurrentOrder.Id))
+        {
+            ClearPendingRecords();
+            return;
+        }
+
+        var order = CurrentOrder;
+        await _repository.DeleteOrderAsync(order.Id);
+        _unsavedOrderIds.Remove(order.Id);
+        Orders.Remove(order);
+        CurrentOrder = null;
+        ClearPendingRecords();
     }
 
     private async Task ImportScanAsync()
@@ -299,6 +320,7 @@ public sealed class MainViewModel : ViewModelBase
             await _repository.UpdateOrderSupplierAsync(CurrentOrder.Id, _pendingSupplier);
         }
 
+        _unsavedOrderIds.Remove(CurrentOrder.Id);
         ClearPendingRecords();
         await ReloadOrdersAsync(CurrentOrder.Id);
         StatusMessage = "\u8bb0\u5f55\u5df2\u4fdd\u5b58\u3002";
@@ -402,11 +424,19 @@ public sealed class MainViewModel : ViewModelBase
     private void ReplaceResults(IEnumerable<ComparisonResult> results)
     {
         Results.Clear();
-        foreach (var result in results)
+        foreach (var result in results
+            .OrderByDescending(IsAbnormalResult)
+            .ThenByDescending(x => x.ScannedAt ?? DateTime.MinValue)
+            .ThenByDescending(x => x.Id))
         {
             Results.Add(result);
         }
         RefreshCommandState();
+    }
+
+    private static bool IsAbnormalResult(ComparisonResult result)
+    {
+        return result.Status != TraceCodeStatus.Matched;
     }
 
     private void ClearResultState()
