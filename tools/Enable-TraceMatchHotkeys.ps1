@@ -54,7 +54,7 @@ function Register-TraceMatchHotkeys {
         [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
     }
 
-    Set-PSReadLineKeyHandler -Chord Ctrl+i -Description "Build TraceMatch installer" -ScriptBlock {
+    Set-PSReadLineKeyHandler -Chord Ctrl+Shift+b -Description "Publish and build TraceMatch installer" -ScriptBlock {
         [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
         [Microsoft.PowerShell.PSConsoleReadLine]::Insert("Invoke-TraceMatchInstaller")
         [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
@@ -77,7 +77,7 @@ if ($InstallProfile) {
 
     if ($profileContent -notlike "*$profileLine*") {
         Add-Content -LiteralPath $PROFILE -Value ""
-        Add-Content -LiteralPath $PROFILE -Value "# TraceMatch hotkeys: Ctrl+B build, Ctrl+I installer"
+        Add-Content -LiteralPath $PROFILE -Value "# TraceMatch hotkeys: Ctrl+B build, Ctrl+Shift+B installer"
         Add-Content -LiteralPath $PROFILE -Value $profileLine
         Write-Host "[TraceMatch] Added hotkeys to PowerShell profile:" -ForegroundColor Green
         Write-Host $PROFILE
@@ -91,5 +91,5 @@ Register-TraceMatchHotkeys
 
 Write-Host "[TraceMatch] Hotkeys enabled in this PowerShell session." -ForegroundColor Green
 Write-Host "  Ctrl+B  Build Release"
-Write-Host "  Ctrl+I  Publish and build installer"
-Write-Host "Note: Ctrl+I is the same key code as Tab in many terminals."
+Write-Host "  Ctrl+Shift+B  Publish and build installer"
+Write-Host "Note: some terminals may reserve Ctrl+Shift+B before PowerShell receives it."

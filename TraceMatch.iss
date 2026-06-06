@@ -1,5 +1,5 @@
 #define MyAppName "TraceMatch"
-#define MyAppVersion "1.0.2"
+#define MyAppVersion "1.0.5"
 #define MyAppPublisher "TraceMatch"
 #define MyAppExeName "TraceMatch.exe"
 #define MyPublishDir "publish\win-x64"

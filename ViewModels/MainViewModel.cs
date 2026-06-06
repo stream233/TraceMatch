@@ -82,6 +82,7 @@ public sealed class MainViewModel : ViewModelBase
                 else
                 {
                     ClearPendingRecords();
+                    LoadOrderFields(value);
                     _ = LoadOrderResultsAsync();
                 }
             }
@@ -362,6 +363,14 @@ public sealed class MainViewModel : ViewModelBase
             DuplicateCount = results.Count(x => x.Status == TraceCodeStatus.Duplicate)
         };
         StatusMessage = $"当前验收单：{CurrentOrder.OrderNumber}";
+    }
+
+    private void LoadOrderFields(AcceptanceOrder order)
+    {
+        OrderNumber = order.OrderNumber;
+        Supplier = order.Supplier;
+        Operator = order.Operator;
+        Remark = order.Remark ?? string.Empty;
     }
 
     private void ExportExcel()

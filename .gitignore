@@ -8,3 +8,5 @@ installer/
 .codex/
 *.user
 *.suo
+*.exe
+*.msi

@@ -193,6 +193,6 @@ powershell -ExecutionPolicy Bypass -File "D:\TraceMatch\tools\Enable-TraceMatchH
 Shortcuts:
 
 - `Ctrl+B`: build TraceMatch Release
-- `Ctrl+I`: publish and build installer
+- `Ctrl+Shift+B`: publish and build installer
 
-Note: in many terminals, `Ctrl+I` is the same key code as `Tab`.
+Note: some terminals may reserve `Ctrl+Shift+B` before PowerShell receives it.
