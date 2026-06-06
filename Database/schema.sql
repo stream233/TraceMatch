@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS shipment_items (
     specification TEXT NULL,
     batch_number TEXT NULL,
     manufacturer TEXT NULL,
+    production_date TEXT NULL,
     expiry_date TEXT NULL,
     quantity REAL NOT NULL DEFAULT 1,
     FOREIGN KEY(order_id) REFERENCES acceptance_orders(id) ON DELETE CASCADE
@@ -42,6 +43,7 @@ CREATE TABLE IF NOT EXISTS comparison_results (
     specification TEXT NULL,
     batch_number TEXT NULL,
     manufacturer TEXT NULL,
+    production_date TEXT NULL,
     expiry_date TEXT NULL,
     quantity REAL NOT NULL DEFAULT 0,
     scanned_at TEXT NULL,

@@ -43,7 +43,7 @@ public sealed class ReportExportService
         summary.Columns().AdjustToContents();
 
         var detail = workbook.Worksheets.Add("异常明细");
-        var headers = new[] { "状态", "追溯码", "药品名称", "规格", "批号", "生产企业", "有效期", "数量", "扫描时间" };
+        var headers = new[] { "状态", "追溯码", "药品名称", "规格", "批号", "生产企业", "生产日期", "有效期", "数量", "扫描时间" };
         for (var i = 0; i < headers.Length; i++)
         {
             detail.Cell(1, i + 1).Value = headers[i];
@@ -59,9 +59,10 @@ public sealed class ReportExportService
             detail.Cell(rowIndex + 2, 4).Value = row.Specification;
             detail.Cell(rowIndex + 2, 5).Value = row.BatchNumber;
             detail.Cell(rowIndex + 2, 6).Value = row.Manufacturer;
-            detail.Cell(rowIndex + 2, 7).Value = row.ExpiryDate;
-            detail.Cell(rowIndex + 2, 8).Value = row.Quantity;
-            detail.Cell(rowIndex + 2, 9).Value = row.ScannedAt?.ToString("yyyy-MM-dd HH:mm:ss");
+            detail.Cell(rowIndex + 2, 7).Value = row.ProductionDate;
+            detail.Cell(rowIndex + 2, 8).Value = row.ExpiryDate;
+            detail.Cell(rowIndex + 2, 9).Value = row.Quantity;
+            detail.Cell(rowIndex + 2, 10).Value = row.ScannedAt?.ToString("yyyy-MM-dd HH:mm:ss");
         }
         detail.Columns().AdjustToContents();
         workbook.SaveAs(path);
@@ -95,6 +96,7 @@ public sealed class ReportExportService
                             columns.RelativeColumn();
                             columns.RelativeColumn();
                             columns.RelativeColumn();
+                            columns.RelativeColumn();
                         });
                         AddStat(table, "应到", stats.ExpectedCount);
                         AddStat(table, "扫描", stats.ScannedCount);
@@ -120,6 +122,7 @@ public sealed class ReportExportService
                         AddHeader(table, "追溯码");
                         AddHeader(table, "药品名称");
                         AddHeader(table, "批号");
+                        AddHeader(table, "生产日期");
                         AddHeader(table, "有效期");
                         AddHeader(table, "扫描时间");
                         foreach (var item in abnormal)
@@ -128,6 +131,7 @@ public sealed class ReportExportService
                             AddCell(table, item.TraceCode);
                             AddCell(table, item.DrugName ?? "");
                             AddCell(table, item.BatchNumber ?? "");
+                            AddCell(table, item.ProductionDate ?? "");
                             AddCell(table, item.ExpiryDate ?? "");
                             AddCell(table, item.ScannedAt?.ToString("yyyy-MM-dd HH:mm") ?? "");
                         }

@@ -40,6 +40,7 @@ public sealed class ComparisonService
                 Specification = shipment.Specification,
                 BatchNumber = shipment.BatchNumber,
                 Manufacturer = shipment.Manufacturer,
+                ProductionDate = shipment.ProductionDate,
                 ExpiryDate = shipment.ExpiryDate,
                 Quantity = shipment.Quantity,
                 Status = TraceCodeStatus.Missing
@@ -69,6 +70,7 @@ public sealed class ComparisonService
             Specification = shipment?.Specification,
             BatchNumber = shipment?.BatchNumber,
             Manufacturer = shipment?.Manufacturer,
+            ProductionDate = shipment?.ProductionDate,
             ExpiryDate = shipment?.ExpiryDate,
             Quantity = shipment?.Quantity ?? 0,
             ScannedAt = scan.ScannedAt,

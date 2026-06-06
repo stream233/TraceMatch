@@ -40,9 +40,21 @@
                 <TextBlock Text="TraceMatch" FontSize="34" FontWeight="Bold" Foreground="#17231E"/>
                 <TextBlock Text="药品追溯码到货比对工作台" FontSize="15" Foreground="#5B6B62" Margin="2,2,0,0"/>
             </StackPanel>
-            <ComboBox DockPanel.Dock="Right" Width="330" Height="36" Margin="16,8,0,0"
-                      ItemsSource="{Binding Orders}" SelectedItem="{Binding CurrentOrder}"
-                      DisplayMemberPath="OrderNumber"/>
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="16,8,0,0">
+                <ComboBox Width="520" Height="36"
+                          ItemsSource="{Binding Orders}" SelectedItem="{Binding CurrentOrder}"
+                          DisplayMemberPath="DisplayName"
+                          HorizontalContentAlignment="Center"
+                          VerticalContentAlignment="Center">
+                    <ComboBox.ItemContainerStyle>
+                        <Style TargetType="ComboBoxItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                        </Style>
+                    </ComboBox.ItemContainerStyle>
+                </ComboBox>
+                <Button Content="&#x5220;&#x9664;&#x9A8C;&#x6536;&#x5355;" Command="{Binding DeleteOrderCommand}" Width="120" Margin="8,0,0,0" Background="#8A2F2F"/>
+            </StackPanel>
         </DockPanel>
 
         <Border Grid.Row="1" Background="#FBFCFA" BorderBrush="#D8DED6" BorderThickness="1" Padding="16" Margin="0,0,0,14">
@@ -59,7 +71,7 @@
                     <TextBox Text="{Binding OrderNumber, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Margin="0,0,12,0">
-                    <TextBlock Text="供应商" Style="{StaticResource LabelText}"/>
+                    <TextBlock Text="供应商（导入后自动识别）" Style="{StaticResource LabelText}"/>
                     <TextBox Text="{Binding Supplier, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
                 <StackPanel Grid.Column="2" Margin="0,0,12,0">
@@ -83,6 +95,7 @@
                 <Button Content="导入平台发货数据" Command="{Binding ImportShipmentCommand}" Width="150"/>
                 <Button Content="导入扫描文件" Command="{Binding ImportScanCommand}" Width="130"/>
                 <Button Content="重新比对" Command="{Binding CompareCommand}" Width="104"/>
+                <Button Content="&#x4FDD;&#x5B58;" Command="{Binding SaveRecordsCommand}" Width="104" Background="#2F6349"/>
                 <Button Content="导出 Excel" Command="{Binding ExportExcelCommand}" Width="104" Background="#516B37"/>
                 <Button Content="导出 PDF" Command="{Binding ExportPdfCommand}" Width="104" Background="#65533B"/>
             </StackPanel>
@@ -120,24 +133,40 @@
                       IsReadOnly="True" CanUserAddRows="False" GridLinesVisibility="Horizontal"
                       HeadersVisibility="Column" RowHeight="36" FontSize="13"
                       Background="White" BorderBrush="#D8DED6" BorderThickness="1">
+                <DataGrid.Resources>
+                    <Style TargetType="DataGridColumnHeader">
+                        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                        <Setter Property="VerticalContentAlignment" Value="Center"/>
+                    </Style>
+                    <Style TargetType="TextBlock" x:Key="CenteredCellText">
+                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                        <Setter Property="TextAlignment" Value="Center"/>
+                    </Style>
+                    <Style TargetType="DataGridCell">
+                        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                        <Setter Property="VerticalContentAlignment" Value="Center"/>
+                    </Style>
+                </DataGrid.Resources>
                 <DataGrid.Columns>
                     <DataGridTemplateColumn Header="状态" Width="92">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Border Background="{Binding Status, Converter={StaticResource StatusBrushConverter}}" CornerRadius="2" Padding="7,3" HorizontalAlignment="Left">
+                                <Border Background="{Binding Status, Converter={StaticResource StatusBrushConverter}}" CornerRadius="2" Padding="7,3" HorizontalAlignment="Center" VerticalAlignment="Center">
                                     <TextBlock Text="{Binding StatusText}" Foreground="White" FontWeight="SemiBold"/>
                                 </Border>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTextColumn Header="追溯码" Binding="{Binding TraceCode}" Width="2.3*"/>
-                    <DataGridTextColumn Header="药品名称" Binding="{Binding DrugName}" Width="1.8*"/>
-                    <DataGridTextColumn Header="规格" Binding="{Binding Specification}" Width="1.1*"/>
-                    <DataGridTextColumn Header="批号" Binding="{Binding BatchNumber}" Width="1.1*"/>
-                    <DataGridTextColumn Header="生产企业" Binding="{Binding Manufacturer}" Width="1.7*"/>
-                    <DataGridTextColumn Header="有效期" Binding="{Binding ExpiryDate}" Width="1*"/>
-                    <DataGridTextColumn Header="数量" Binding="{Binding Quantity}" Width="80"/>
-                    <DataGridTextColumn Header="扫描时间" Binding="{Binding ScannedAt, StringFormat=yyyy-MM-dd HH:mm:ss}" Width="150"/>
+                    <DataGridTextColumn Header="追溯码" Binding="{Binding TraceCode}" Width="2.3*" ElementStyle="{StaticResource CenteredCellText}"/>
+                    <DataGridTextColumn Header="药品名称" Binding="{Binding DrugName}" Width="1.8*" ElementStyle="{StaticResource CenteredCellText}"/>
+                    <DataGridTextColumn Header="规格" Binding="{Binding Specification}" Width="1.1*" ElementStyle="{StaticResource CenteredCellText}"/>
+                    <DataGridTextColumn Header="批号" Binding="{Binding BatchNumber}" Width="1.1*" ElementStyle="{StaticResource CenteredCellText}"/>
+                    <DataGridTextColumn Header="生产企业" Binding="{Binding Manufacturer}" Width="1.7*" ElementStyle="{StaticResource CenteredCellText}"/>
+                    <DataGridTextColumn Header="生产日期" Binding="{Binding ProductionDate}" Width="150" ElementStyle="{StaticResource CenteredCellText}"/>
+                    <DataGridTextColumn Header="有效期" Binding="{Binding ExpiryDate}" Width="1*" ElementStyle="{StaticResource CenteredCellText}"/>
+                    <DataGridTextColumn Header="数量" Binding="{Binding Quantity}" Width="80" ElementStyle="{StaticResource CenteredCellText}"/>
+                    <DataGridTextColumn Header="扫描时间" Binding="{Binding ScannedAt, StringFormat=yyyy-MM-dd HH:mm:ss}" Width="150" ElementStyle="{StaticResource CenteredCellText}"/>
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>

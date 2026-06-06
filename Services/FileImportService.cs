@@ -41,6 +41,7 @@ public sealed class FileImportService
                     Specification = Value(row, mapping[ImportFields.Specification]),
                     BatchNumber = Value(row, mapping[ImportFields.BatchNumber]),
                     Manufacturer = Value(row, mapping[ImportFields.Manufacturer]),
+                    ProductionDate = Value(row, mapping[ImportFields.ProductionDate]),
                     ExpiryDate = Value(row, mapping[ImportFields.ExpiryDate]),
                     Quantity = decimal.TryParse(Value(row, mapping[ImportFields.Quantity]), out var quantity) ? quantity : 1
                 };
@@ -144,7 +145,7 @@ public sealed class FileImportService
         }
 
         var delimiter = DetectDelimiter(lines[0]);
-        if (lines[0].TrimStart().StartsWith('$'))
+        if (TrimControlPrefix(lines[0]).StartsWith('$'))
         {
             return ReadMasSafeShipmentText(lines, delimiter);
         }
@@ -156,23 +157,36 @@ public sealed class FileImportService
 
     private static ImportTable ReadMasSafeShipmentText(IReadOnlyList<string> lines, char delimiter)
     {
+        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var firstLineValues = SplitLine(TrimControlPrefix(lines[0]).TrimStart('$'), delimiter)
+            .Select(value => value.Trim())
+            .ToList();
+        if (firstLineValues.Count > 0)
+        {
+            metadata[ImportFields.Supplier] = firstLineValues[0];
+        }
+        if (firstLineValues.Count > 1)
+        {
+            metadata[ImportFields.PlatformOrderNumber] = firstLineValues[1];
+        }
+
         var headers = new[]
         {
             ImportFields.TraceCode,
             ImportFields.DrugName,
             ImportFields.BatchNumber,
-            ImportFields.ExpiryDate
+            ImportFields.ProductionDate
         };
 
         var rows = RowsFromDelimitedLines(
             lines.Where(line =>
             {
-                var value = line.TrimStart();
+                var value = TrimControlPrefix(line);
                 return !value.StartsWith('$') && !value.StartsWith('#');
             }),
             headers,
             delimiter);
-        return new ImportTable { Headers = headers, Rows = rows };
+        return new ImportTable { Headers = headers, Rows = rows, Metadata = metadata };
     }
 
     private static ImportTable ReadXml(string path)
@@ -252,6 +266,11 @@ public sealed class FileImportService
             .First().delimiter;
     }
 
+    private static string TrimControlPrefix(string value)
+    {
+        return value.TrimStart('\uFEFF').TrimStart();
+    }
+
     private static IEnumerable<string> SplitLine(string line, char delimiter)
     {
         var result = new List<string>();
@@ -298,7 +317,10 @@ public static class ImportFields
     public const string Specification = "\u89c4\u683c";
     public const string BatchNumber = "\u6279\u53f7";
     public const string Manufacturer = "\u751f\u4ea7\u4f01\u4e1a";
+    public const string ProductionDate = "\u751f\u4ea7\u65e5\u671f";
     public const string ExpiryDate = "\u6709\u6548\u671f";
     public const string Quantity = "\u6570\u91cf";
     public const string ScannedAt = "\u626b\u63cf\u65f6\u95f4";
+    public const string Supplier = "\u4f9b\u5e94\u5546";
+    public const string PlatformOrderNumber = "\u5e73\u53f0\u5355\u53f7";
 }

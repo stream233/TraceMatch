@@ -31,6 +31,26 @@ public sealed class AppDatabase
         await using var command = connection.CreateCommand();
         command.CommandText = schema;
         await command.ExecuteNonQueryAsync();
+        await EnsureColumnAsync(connection, "shipment_items", "production_date", "TEXT NULL");
+        await EnsureColumnAsync(connection, "comparison_results", "production_date", "TEXT NULL");
+    }
+
+    private static async Task EnsureColumnAsync(SqliteConnection connection, string tableName, string columnName, string columnDefinition)
+    {
+        await using var existsCommand = connection.CreateCommand();
+        existsCommand.CommandText = $"PRAGMA table_info({tableName});";
+        await using var reader = await existsCommand.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            if (string.Equals(reader.GetString(1), columnName, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+        }
+
+        await using var alterCommand = connection.CreateCommand();
+        alterCommand.CommandText = $"ALTER TABLE {tableName} ADD COLUMN {columnName} {columnDefinition};";
+        await alterCommand.ExecuteNonQueryAsync();
     }
 }
 
@@ -53,6 +73,7 @@ CREATE TABLE IF NOT EXISTS shipment_items (
     specification TEXT NULL,
     batch_number TEXT NULL,
     manufacturer TEXT NULL,
+    production_date TEXT NULL,
     expiry_date TEXT NULL,
     quantity REAL NOT NULL DEFAULT 1,
     FOREIGN KEY(order_id) REFERENCES acceptance_orders(id) ON DELETE CASCADE
@@ -76,6 +97,7 @@ CREATE TABLE IF NOT EXISTS comparison_results (
     specification TEXT NULL,
     batch_number TEXT NULL,
     manufacturer TEXT NULL,
+    production_date TEXT NULL,
     expiry_date TEXT NULL,
     quantity REAL NOT NULL DEFAULT 0,
     scanned_at TEXT NULL,

@@ -4,6 +4,7 @@ public sealed class ImportTable
 {
     public IReadOnlyList<string> Headers { get; init; } = Array.Empty<string>();
     public IReadOnlyList<Dictionary<string, string>> Rows { get; init; } = Array.Empty<Dictionary<string, string>>();
+    public IReadOnlyDictionary<string, string> Metadata { get; init; } = new Dictionary<string, string>();
 }
 
 public sealed class FieldMapping
