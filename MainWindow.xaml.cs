@@ -19,7 +19,8 @@ public partial class MainWindow : Window
             repository,
             new FileImportService(),
             new ComparisonService(),
-            new ReportExportService());
+            new ReportExportService(),
+            new UserSettingsService());
         DataContext = _viewModel;
     }
 

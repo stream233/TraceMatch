@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Windows;
 using Microsoft.Data.Sqlite;
 using Microsoft.Win32;
@@ -16,6 +17,7 @@ public sealed class MainViewModel : ViewModelBase
     private readonly FileImportService _importService;
     private readonly ComparisonService _comparisonService;
     private readonly ReportExportService _reportExportService;
+    private readonly UserSettingsService _userSettingsService;
     private AcceptanceOrder? _currentOrder;
     private IReadOnlyList<ShipmentItem>? _pendingShipments;
     private IReadOnlyList<ScanRecord>? _pendingScans;
@@ -30,13 +32,14 @@ public sealed class MainViewModel : ViewModelBase
     private string _remark = string.Empty;
     private string _statusMessage = "先新建验收单，然后导入平台发货数据和扫码文件。";
 
-    public MainViewModel(AppDatabase database, AcceptanceRepository repository, FileImportService importService, ComparisonService comparisonService, ReportExportService reportExportService)
+    public MainViewModel(AppDatabase database, AcceptanceRepository repository, FileImportService importService, ComparisonService comparisonService, ReportExportService reportExportService, UserSettingsService userSettingsService)
     {
         _database = database;
         _repository = repository;
         _importService = importService;
         _comparisonService = comparisonService;
         _reportExportService = reportExportService;
+        _userSettingsService = userSettingsService;
 
         Orders = new ObservableCollection<AcceptanceOrder>();
         Results = new ObservableCollection<ComparisonResult>();
@@ -399,14 +402,26 @@ public sealed class MainViewModel : ViewModelBase
         }
     }
 
-    private static string? PickImportFile()
+    private string? PickImportFile()
     {
         var dialog = new OpenFileDialog
         {
             Filter = "导入文件|*.csv;*.txt;*.xlsx;*.xlsm;*.xls;*.xml|CSV|*.csv|文本|*.txt|Excel|*.xlsx;*.xlsm;*.xls|XML|*.xml",
-            Multiselect = false
+            Multiselect = false,
+            InitialDirectory = _userSettingsService.LastImportDirectory
         };
-        return dialog.ShowDialog() == true ? dialog.FileName : null;
+        if (dialog.ShowDialog() != true)
+        {
+            return null;
+        }
+
+        var directory = Path.GetDirectoryName(dialog.FileName);
+        if (!string.IsNullOrWhiteSpace(directory))
+        {
+            _userSettingsService.LastImportDirectory = directory;
+        }
+
+        return dialog.FileName;
     }
 
     private static FieldMapping? ShowMapping(ImportTable table, IReadOnlyList<string> targetFields)
