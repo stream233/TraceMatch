@@ -168,3 +168,31 @@ dotnet build
 ```
 
 构建结果：0 警告，0 错误。
+## PowerShell Hotkeys
+
+Hotkey script:
+
+```text
+tools/Enable-TraceMatchHotkeys.ps1
+```
+
+Temporary use in one PowerShell window:
+
+```powershell
+powershell -ExecutionPolicy Bypass -NoProfile
+. "D:\TraceMatch\tools\Enable-TraceMatchHotkeys.ps1"
+```
+
+Install into the current user's PowerShell profile:
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+powershell -ExecutionPolicy Bypass -File "D:\TraceMatch\tools\Enable-TraceMatchHotkeys.ps1" -InstallProfile
+```
+
+Shortcuts:
+
+- `Ctrl+B`: build TraceMatch Release
+- `Ctrl+I`: publish and build installer
+
+Note: in many terminals, `Ctrl+I` is the same key code as `Tab`.

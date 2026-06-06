@@ -1,5 +1,5 @@
 #define MyAppName "TraceMatch"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.0.2"
 #define MyAppPublisher "TraceMatch"
 #define MyAppExeName "TraceMatch.exe"
 #define MyPublishDir "publish\win-x64"
@@ -13,7 +13,7 @@ DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 OutputDir=installer
-OutputBaseFilename=TraceMatchSetup
+OutputBaseFilename=TraceMatchSetup-{#MyAppVersion}
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
