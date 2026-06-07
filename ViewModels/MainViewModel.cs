@@ -18,6 +18,7 @@ public sealed class MainViewModel : ViewModelBase
     private readonly ComparisonService _comparisonService;
     private readonly ReportExportService _reportExportService;
     private readonly UserSettingsService _userSettingsService;
+    private readonly UpdateService _updateService;
     private AcceptanceOrder? _currentOrder;
     private IReadOnlyList<ShipmentItem>? _pendingShipments;
     private IReadOnlyList<ScanRecord>? _pendingScans;
@@ -32,7 +33,7 @@ public sealed class MainViewModel : ViewModelBase
     private string _remark = string.Empty;
     private string _statusMessage = "先新建验收单，然后导入平台发货数据和扫码文件。";
 
-    public MainViewModel(AppDatabase database, AcceptanceRepository repository, FileImportService importService, ComparisonService comparisonService, ReportExportService reportExportService, UserSettingsService userSettingsService)
+    public MainViewModel(AppDatabase database, AcceptanceRepository repository, FileImportService importService, ComparisonService comparisonService, ReportExportService reportExportService, UserSettingsService userSettingsService, UpdateService updateService)
     {
         _database = database;
         _repository = repository;
@@ -40,6 +41,7 @@ public sealed class MainViewModel : ViewModelBase
         _comparisonService = comparisonService;
         _reportExportService = reportExportService;
         _userSettingsService = userSettingsService;
+        _updateService = updateService;
 
         Orders = new ObservableCollection<AcceptanceOrder>();
         Results = new ObservableCollection<ComparisonResult>();
@@ -52,6 +54,7 @@ public sealed class MainViewModel : ViewModelBase
         ExportExcelCommand = new RelayCommand(ExportExcel, () => CurrentOrder is not null && Results.Count > 0);
         ExportPdfCommand = new RelayCommand(ExportPdf, () => CurrentOrder is not null && Results.Count > 0);
         LoadCommand = new AsyncRelayCommand(LoadAsync);
+        ShowAboutCommand = new RelayCommand(ShowAbout);
     }
 
     public ObservableCollection<AcceptanceOrder> Orders { get; }
@@ -65,6 +68,7 @@ public sealed class MainViewModel : ViewModelBase
     public RelayCommand ExportExcelCommand { get; }
     public RelayCommand ExportPdfCommand { get; }
     public AsyncRelayCommand LoadCommand { get; }
+    public RelayCommand ShowAboutCommand { get; }
 
     public AcceptanceOrder? CurrentOrder
     {
@@ -131,6 +135,7 @@ public sealed class MainViewModel : ViewModelBase
         await ReloadOrdersAsync();
         CurrentOrder = null;
         ClearResultState();
+        _ = CheckUpdateOnStartupAsync();
     }
 
     private async Task CreateOrderAsync()
@@ -409,6 +414,27 @@ public sealed class MainViewModel : ViewModelBase
             _reportExportService.ExportPdf(dialog.FileName, CurrentOrder, Stats, Results.ToList());
             StatusMessage = $"PDF 报告已导出：{dialog.FileName}";
         }
+    }
+
+    private async Task CheckUpdateOnStartupAsync()
+    {
+        try
+        {
+            var release = await _updateService.CheckLatestAsync();
+            if (release.HasUpdate)
+            {
+                new UpdateWindow(release) { Owner = Application.Current.MainWindow }.ShowDialog();
+            }
+        }
+        catch
+        {
+            StatusMessage = "检查更新失败。";
+        }
+    }
+
+    private void ShowAbout()
+    {
+        new AboutWindow(_updateService) { Owner = Application.Current.MainWindow }.ShowDialog();
     }
 
     private string? PickImportFile()

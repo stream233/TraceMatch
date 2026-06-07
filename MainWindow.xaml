@@ -41,6 +41,7 @@
                 <TextBlock Text="药品追溯码到货比对工作台" FontSize="15" Foreground="#5B6B62" Margin="2,2,0,0"/>
             </StackPanel>
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="16,8,0,0">
+                <Button Content="关于" Command="{Binding ShowAboutCommand}" Width="78" Margin="0,0,8,0" Background="#4F654F"/>
                 <ComboBox Width="520" Height="36"
                           ItemsSource="{Binding Orders}" SelectedItem="{Binding CurrentOrder}"
                           DisplayMemberPath="DisplayName"
