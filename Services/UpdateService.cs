@@ -9,6 +9,7 @@ namespace TraceMatch.Services;
 public sealed class UpdateService
 {
     private const string LatestReleaseUrl = "https://api.github.com/repos/stream233/TraceMatch/releases/latest";
+    public const string LatestReleasePageUrl = "https://github.com/stream233/TraceMatch/releases/latest";
     private static readonly Uri LatestReleaseUri = new(LatestReleaseUrl);
     private readonly HttpClient _httpClient;
 
@@ -30,7 +31,7 @@ public sealed class UpdateService
 
         var currentVersion = GetCurrentVersion();
         var latestVersion = dto.TagName ?? string.Empty;
-        var releasePageUrl = dto.HtmlUrl ?? "https://github.com/stream233/TraceMatch/releases/latest";
+        var releasePageUrl = dto.HtmlUrl ?? LatestReleasePageUrl;
 
         return new ReleaseInfo
         {

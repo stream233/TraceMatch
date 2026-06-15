@@ -12,7 +12,7 @@ public partial class AboutWindow : Window
         InitializeComponent();
         _updateService = updateService;
         VersionText.Text = $"当前版本：{_updateService.GetCurrentVersion()}";
-        StatusText.Text = "可在这里检查 GitHub Releases 中的最新版本。";
+        StatusText.Text = string.Empty;
     }
 
     private async void CheckUpdate_Click(object sender, RoutedEventArgs e)
@@ -34,8 +34,17 @@ public partial class AboutWindow : Window
         }
         catch
         {
-            StatusText.Text = "检查更新失败。";
-            MessageBox.Show(this, "检查更新失败，请稍后再试。", "检查更新", MessageBoxButton.OK, MessageBoxImage.Information);
+            StatusText.Text = "GitHub API 访问受限或网络不可用。";
+            var result = MessageBox.Show(
+                this,
+                "GitHub API 访问受限或网络不可用，无法自动检查更新。\n\n是否打开下载页面手动查看最新版本？",
+                "检查更新",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Information);
+            if (result == MessageBoxResult.Yes)
+            {
+                UpdateService.OpenUrl(UpdateService.LatestReleasePageUrl);
+            }
         }
     }
 

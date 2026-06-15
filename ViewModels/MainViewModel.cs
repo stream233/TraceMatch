@@ -69,6 +69,7 @@ public sealed class MainViewModel : ViewModelBase
     public RelayCommand ExportPdfCommand { get; }
     public AsyncRelayCommand LoadCommand { get; }
     public RelayCommand ShowAboutCommand { get; }
+    public string AppVersionText => $"软件版本：{_updateService.GetCurrentVersion()}";
 
     public AcceptanceOrder? CurrentOrder
     {
@@ -428,7 +429,7 @@ public sealed class MainViewModel : ViewModelBase
         }
         catch
         {
-            StatusMessage = "检查更新失败。";
+            // Startup update checks should stay quiet; the About window shows details on manual checks.
         }
     }
 
