@@ -94,7 +94,7 @@
             </Grid.ColumnDefinitions>
             <StackPanel Orientation="Horizontal">
                 <Button Content="导入平台发货数据" Command="{Binding ImportShipmentCommand}" Width="150"/>
-                <Button Content="导入扫描文件" Command="{Binding ImportScanCommand}" Width="130"/>
+                <Button Content="&#x5BFC;&#x5165;&#x6761;&#x7801;&#x626B;&#x63CF;&#x6570;&#x636E;" Command="{Binding ImportScanCommand}" Width="150"/>
                 <Button Content="重新比对" Command="{Binding CompareCommand}" Width="104"/>
                 <Button Content="&#x4FDD;&#x5B58;" Command="{Binding SaveRecordsCommand}" Width="104" Background="#2F6349"/>
                 <Button Content="导出 Excel" Command="{Binding ExportExcelCommand}" Width="104" Background="#516B37"/>

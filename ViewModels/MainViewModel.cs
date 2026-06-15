@@ -29,7 +29,7 @@ public sealed class MainViewModel : ViewModelBase
     private SummaryStats _stats = new();
     private string _orderNumber = GenerateOrderNumber();
     private string _supplier = string.Empty;
-    private string _operator = "\u6d2a\u91d1\u4e3d";
+    private string _operator = "211";
     private string _remark = string.Empty;
     private string _statusMessage = "先新建验收单，然后导入平台发货数据和扫码文件。";
 
@@ -184,7 +184,7 @@ public sealed class MainViewModel : ViewModelBase
 
     private async Task ImportShipmentAsync()
     {
-        var path = PickImportFile();
+        var path = PickImportFile(ImportFileKind.Shipment);
         if (path is null || CurrentOrder is null)
         {
             return;
@@ -264,7 +264,7 @@ public sealed class MainViewModel : ViewModelBase
 
     private async Task ImportScanAsync()
     {
-        var path = PickImportFile();
+        var path = PickImportFile(ImportFileKind.Scan);
         if (path is null || CurrentOrder is null)
         {
             return;
@@ -437,13 +437,15 @@ public sealed class MainViewModel : ViewModelBase
         new AboutWindow(_updateService) { Owner = Application.Current.MainWindow }.ShowDialog();
     }
 
-    private string? PickImportFile()
+    private string? PickImportFile(ImportFileKind kind)
     {
         var dialog = new OpenFileDialog
         {
             Filter = "导入文件|*.csv;*.txt;*.xlsx;*.xlsm;*.xls;*.xml|CSV|*.csv|文本|*.txt|Excel|*.xlsx;*.xlsm;*.xls|XML|*.xml",
             Multiselect = false,
-            InitialDirectory = _userSettingsService.LastImportDirectory
+            InitialDirectory = kind == ImportFileKind.Shipment
+                ? _userSettingsService.LastShipmentImportDirectory
+                : _userSettingsService.LastScanImportDirectory
         };
         if (dialog.ShowDialog() != true)
         {
@@ -453,10 +455,23 @@ public sealed class MainViewModel : ViewModelBase
         var directory = Path.GetDirectoryName(dialog.FileName);
         if (!string.IsNullOrWhiteSpace(directory))
         {
-            _userSettingsService.LastImportDirectory = directory;
+            if (kind == ImportFileKind.Shipment)
+            {
+                _userSettingsService.LastShipmentImportDirectory = directory;
+            }
+            else
+            {
+                _userSettingsService.LastScanImportDirectory = directory;
+            }
         }
 
         return dialog.FileName;
+    }
+
+    private enum ImportFileKind
+    {
+        Shipment,
+        Scan
     }
 
     private static FieldMapping? ShowMapping(ImportTable table, IReadOnlyList<string> targetFields)

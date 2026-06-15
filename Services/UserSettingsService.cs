@@ -16,9 +16,9 @@ public sealed class UserSettingsService
         _settings = LoadSettings();
     }
 
-    public string? LastImportDirectory
+    public string? LastShipmentImportDirectory
     {
-        get => Directory.Exists(_settings.LastImportDirectory) ? _settings.LastImportDirectory : null;
+        get => GetValidDirectory(_settings.LastShipmentImportDirectory) ?? GetValidDirectory(_settings.LastImportDirectory);
         set
         {
             if (string.IsNullOrWhiteSpace(value) || !Directory.Exists(value))
@@ -26,7 +26,22 @@ public sealed class UserSettingsService
                 return;
             }
 
-            _settings.LastImportDirectory = value;
+            _settings.LastShipmentImportDirectory = value;
+            SaveSettings();
+        }
+    }
+
+    public string? LastScanImportDirectory
+    {
+        get => GetValidDirectory(_settings.LastScanImportDirectory) ?? GetValidDirectory(_settings.LastImportDirectory);
+        set
+        {
+            if (string.IsNullOrWhiteSpace(value) || !Directory.Exists(value))
+            {
+                return;
+            }
+
+            _settings.LastScanImportDirectory = value;
             SaveSettings();
         }
     }
@@ -55,8 +70,15 @@ public sealed class UserSettingsService
         File.WriteAllText(_settingsPath, json);
     }
 
+    private static string? GetValidDirectory(string? directory)
+    {
+        return Directory.Exists(directory) ? directory : null;
+    }
+
     private sealed class UserSettings
     {
         public string? LastImportDirectory { get; set; }
+        public string? LastShipmentImportDirectory { get; set; }
+        public string? LastScanImportDirectory { get; set; }
     }
 }
