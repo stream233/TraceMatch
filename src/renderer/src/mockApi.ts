@@ -6,6 +6,7 @@ import {
   type ShipmentItem,
   type TraceMatchApi
 } from '../../shared/types'
+import { nextAcceptanceOrderNumber } from '../../shared/orderNumbers'
 
 const order: AcceptanceOrder = {
   id: 1,
@@ -32,6 +33,7 @@ const results: ComparisonResult[] = statuses.map((status, index) => ({
   scannedAt: status === 2 ? null : `2026-07-04T06:${String(36 - index).padStart(2, '0')}:12.000Z`,
   status
 }))
+const resultSearchText = results.map((item) => `${item.traceCode} ${item.batchNumber}`).join(' ')
 
 let orders = [order]
 let appSettings = { pinAbnormalResults: false }
@@ -41,6 +43,12 @@ export function installMockApi(): void {
     app: { getVersion: async () => '1.0.9-dev', openExternal: async () => undefined, copyText: async () => undefined },
     orders: {
       list: async () => orders,
+      search: async (query) => {
+        const normalized = query.trim().toLowerCase()
+        if (!normalized) return orders
+        return orders.filter((item) => `${item.orderNumber} ${item.supplier} ${item.drugInfo ?? ''} ${item.id === order.id ? resultSearchText : ''}`.toLowerCase().includes(normalized))
+      },
+      nextNumber: async () => nextAcceptanceOrderNumber(orders.map((item) => item.orderNumber)),
       create: async (input) => {
         const created: AcceptanceOrder = { ...input, id: Date.now(), createdAt: new Date().toISOString() }
         orders = [created, ...orders]

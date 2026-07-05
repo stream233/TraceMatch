@@ -33,6 +33,8 @@ export function registerIpc(database: TraceMatchDatabase, settings: UserSettings
   })
 
   handle('orders:list', () => database.listOrders())
+  handle('orders:search', (query: string) => database.searchOrders(query.slice(0, 200)))
+  handle('orders:next-number', () => database.getNextOrderNumber())
   handle('orders:create', (input: Omit<AcceptanceOrder, 'id' | 'createdAt'>) => database.createOrder(input))
   handle('orders:delete', (id: number) => database.deleteOrder(id))
   handle('orders:workspace', (id: number) => database.getWorkspace(id))

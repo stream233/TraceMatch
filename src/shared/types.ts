@@ -130,6 +130,8 @@ export interface TraceMatchApi {
   }
   orders: {
     list(): Promise<AcceptanceOrder[]>
+    search(query: string): Promise<AcceptanceOrder[]>
+    nextNumber(): Promise<string>
     create(input: Omit<AcceptanceOrder, 'id' | 'createdAt'>): Promise<AcceptanceOrder>
     delete(id: number): Promise<void>
     workspace(id: number): Promise<OrderWorkspace>

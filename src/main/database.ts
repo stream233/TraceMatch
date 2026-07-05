@@ -12,6 +12,7 @@ import type {
   TraceCodeStatus
 } from '../shared/types'
 import { compareRecords } from './services/comparison'
+import { acceptanceOrderNumberPrefix, nextAcceptanceOrderNumber } from '../shared/orderNumbers'
 
 const schema = `
 CREATE TABLE IF NOT EXISTS acceptance_orders (
@@ -97,6 +98,51 @@ export class TraceMatchDatabase {
       LIMIT 200
     `).all() as Row[]
     return rows.map(this.mapOrder)
+  }
+
+  searchOrders(query: string): AcceptanceOrder[] {
+    const normalizedQuery = query.trim()
+    if (!normalizedQuery) return this.listOrders()
+
+    const escapedQuery = normalizedQuery.replace(/[\\%_]/g, '\\$&')
+    const pattern = `%${escapedQuery}%`
+    const rows = this.db.prepare(`
+      SELECT o.id, o.order_number, o.supplier, o.operator, o.created_at, o.remark,
+             (SELECT drug_name FROM shipment_items s WHERE s.order_id = o.id AND drug_name IS NOT NULL AND drug_name <> '' LIMIT 1) AS drug_info
+      FROM acceptance_orders o
+      WHERE o.order_number LIKE ? ESCAPE '\\'
+         OR o.supplier LIKE ? ESCAPE '\\'
+         OR EXISTS (
+           SELECT 1 FROM shipment_items s
+           WHERE s.order_id = o.id
+             AND (s.trace_code LIKE ? ESCAPE '\\'
+               OR s.batch_number LIKE ? ESCAPE '\\'
+               OR s.drug_name LIKE ? ESCAPE '\\')
+         )
+         OR EXISTS (
+           SELECT 1 FROM scan_records s
+           WHERE s.order_id = o.id AND s.trace_code LIKE ? ESCAPE '\\'
+         )
+         OR EXISTS (
+           SELECT 1 FROM comparison_results r
+           WHERE r.order_id = o.id
+             AND (r.trace_code LIKE ? ESCAPE '\\'
+               OR r.batch_number LIKE ? ESCAPE '\\'
+               OR r.drug_name LIKE ? ESCAPE '\\')
+         )
+      ORDER BY datetime(o.created_at) DESC, o.id DESC
+      LIMIT 200
+    `).all(...Array(9).fill(pattern)) as Row[]
+    return rows.map(this.mapOrder)
+  }
+
+  getNextOrderNumber(date = new Date()): string {
+    const prefix = acceptanceOrderNumberPrefix(date)
+    const rows = this.db.prepare(`
+      SELECT order_number FROM acceptance_orders
+      WHERE order_number LIKE ?
+    `).all(`${prefix}%`) as Row[]
+    return nextAcceptanceOrderNumber(rows.map((row) => asString(row.order_number)), date)
   }
 
   createOrder(input: Omit<AcceptanceOrder, 'id' | 'createdAt'>): AcceptanceOrder {

@@ -2,21 +2,14 @@ import { useState } from 'react'
 import type { AcceptanceOrder } from '../../../shared/types'
 import { Modal } from './Modal'
 
-const generateOrderNumber = () => {
-  const now = new Date()
-  const digits = [now.getFullYear(), now.getMonth() + 1, now.getDate(), now.getHours(), now.getMinutes(), now.getSeconds()]
-    .map((value, index) => index === 0 ? String(value) : String(value).padStart(2, '0'))
-    .join('')
-  return `YS${digits}${String(now.getMilliseconds()).padStart(3, '0').slice(0, 2)}`
-}
-
 interface Props {
+  initialOrderNumber: string
   onClose(): void
   onCreate(input: Omit<AcceptanceOrder, 'id' | 'createdAt'>): Promise<unknown>
 }
 
-export function CreateOrderDialog({ onClose, onCreate }: Props) {
-  const [orderNumber, setOrderNumber] = useState(generateOrderNumber)
+export function CreateOrderDialog({ initialOrderNumber, onClose, onCreate }: Props) {
+  const [orderNumber, setOrderNumber] = useState(initialOrderNumber)
   const [supplier, setSupplier] = useState('')
   const [operator, setOperator] = useState('211')
   const [remark, setRemark] = useState('')

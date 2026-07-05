@@ -9,6 +9,8 @@ const api: TraceMatchApi = {
   },
   orders: {
     list: () => ipcRenderer.invoke('orders:list'),
+    search: (query) => ipcRenderer.invoke('orders:search', query),
+    nextNumber: () => ipcRenderer.invoke('orders:next-number'),
     create: (input) => ipcRenderer.invoke('orders:create', input),
     delete: (id) => ipcRenderer.invoke('orders:delete', id),
     workspace: (id) => ipcRenderer.invoke('orders:workspace', id),

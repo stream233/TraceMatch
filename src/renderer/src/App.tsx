@@ -17,7 +17,7 @@ interface MappingRequest { kind: ImportKind; picked: PickedImport }
 
 export default function App() {
   const store = useTraceMatch()
-  const [showCreate, setShowCreate] = useState(false)
+  const [newOrderNumber, setNewOrderNumber] = useState<string | null>(null)
   const [showSettings, setShowSettings] = useState(false)
   const [showAbout, setShowAbout] = useState(false)
   const [appSettings, setAppSettings] = useState<AppSettings>({ pinAbnormalResults: false })
@@ -82,9 +82,17 @@ export default function App() {
     }
   }
 
+  const openCreateDialog = async () => {
+    try {
+      setNewOrderNumber(await store.getNextOrderNumber())
+    } catch (error) {
+      window.alert(`无法生成验收单号\n\n${error instanceof Error ? error.message : String(error)}`)
+    }
+  }
+
   return (
     <div className="app-shell">
-      <Sidebar orders={store.orders} currentId={store.currentOrder?.id} onSelect={(order) => void store.selectOrder(order)} onDelete={(order) => void store.deleteOrder(order)} onCreate={() => setShowCreate(true)} onSettings={() => setShowSettings(true)} onAbout={() => setShowAbout(true)} />
+      <Sidebar orders={store.orders} currentId={store.currentOrder?.id} onSearch={store.searchOrders} onSelect={(order) => void store.selectOrder(order)} onDelete={(order) => void store.deleteOrder(order)} onCreate={() => void openCreateDialog()} onSettings={() => setShowSettings(true)} onAbout={() => setShowAbout(true)} />
       <main className="workspace">
         <WorkspaceHeader order={store.currentOrder} dirty={store.dirty} />
         <WorkflowToolbar disabled={!store.currentOrder} busy={store.busy} dirty={store.dirty} hasResults={store.results.length > 0}
@@ -98,7 +106,7 @@ export default function App() {
         </footer>
       </main>
 
-      {showCreate ? <CreateOrderDialog onClose={() => setShowCreate(false)} onCreate={store.createOrder} /> : null}
+      {newOrderNumber ? <CreateOrderDialog initialOrderNumber={newOrderNumber} onClose={() => setNewOrderNumber(null)} onCreate={store.createOrder} /> : null}
       {showSettings ? <SettingsDialog settings={appSettings} onClose={() => setShowSettings(false)} onSave={saveSettings} /> : null}
       {showAbout ? <AboutDialog onClose={() => setShowAbout(false)} /> : null}
       {mappingRequest ? <MappingDialog kind={mappingRequest.kind} fileName={mappingRequest.picked.fileName} table={mappingRequest.picked.table}

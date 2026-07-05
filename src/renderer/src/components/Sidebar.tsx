@@ -12,6 +12,7 @@ interface OrderContextMenu {
 interface Props {
   orders: AcceptanceOrder[]
   currentId?: number
+  onSearch(query: string): Promise<AcceptanceOrder[]>
   onSelect(order: AcceptanceOrder): void
   onDelete(order: AcceptanceOrder): void
   onCreate(): void
@@ -19,13 +20,35 @@ interface Props {
   onAbout(): void
 }
 
-export function Sidebar({ orders, currentId, onSelect, onDelete, onCreate, onSettings, onAbout }: Props) {
+export function Sidebar({ orders, currentId, onSearch, onSelect, onDelete, onCreate, onSettings, onAbout }: Props) {
   const [query, setQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<AcceptanceOrder[]>([])
+  const [searching, setSearching] = useState(false)
   const [contextMenu, setContextMenu] = useState<OrderContextMenu | null>(null)
-  const deferredQuery = useDeferredValue(query.trim().toLowerCase())
-  const visibleOrders = deferredQuery
-    ? orders.filter((order) => `${order.orderNumber} ${order.supplier} ${order.drugInfo ?? ''}`.toLowerCase().includes(deferredQuery))
-    : orders
+  const deferredQuery = useDeferredValue(query.trim())
+  const visibleOrders = deferredQuery ? searchResults : orders
+
+  useEffect(() => {
+    if (!deferredQuery) {
+      setSearchResults([])
+      setSearching(false)
+      return
+    }
+
+    let cancelled = false
+    setSearching(true)
+    void onSearch(deferredQuery)
+      .then((items) => {
+        if (!cancelled) setSearchResults(items)
+      })
+      .catch(() => {
+        if (!cancelled) setSearchResults([])
+      })
+      .finally(() => {
+        if (!cancelled) setSearching(false)
+      })
+    return () => { cancelled = true }
+  }, [deferredQuery, onSearch, orders])
 
   useEffect(() => {
     if (!contextMenu) return
@@ -74,8 +97,8 @@ export function Sidebar({ orders, currentId, onSelect, onDelete, onCreate, onSet
         <div><strong>TraceMatch</strong><small>到货比对</small></div>
       </div>
       <button className="new-order-button" type="button" onClick={onCreate}><FilePlus2 size={17} />新建验收单</button>
-      <label className="sidebar-search"><Search size={15} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索验收单" /></label>
-      <div className="sidebar-section-title"><span>最近验收</span><b>{orders.length}</b></div>
+      <label className="sidebar-search"><Search size={15} /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索单号/追溯码/批号" aria-label="搜索验收单号、追溯码或批号" /></label>
+      <div className="sidebar-section-title"><span>{deferredQuery ? '搜索结果' : '最近验收'}</span><b>{searching ? '…' : visibleOrders.length}</b></div>
       <nav className="order-list" aria-label="验收单列表">
         {visibleOrders.map((order) => (
           <div className={`order-item${order.id === currentId ? ' is-active' : ''}`} key={order.id} onContextMenu={(event) => handleContextMenu(event, order)}>

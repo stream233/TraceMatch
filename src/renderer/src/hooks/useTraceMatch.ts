@@ -63,6 +63,9 @@ export function useTraceMatch() {
     await loadWorkspace(order)
   }, [currentOrder?.id, dirty, loadWorkspace])
 
+  const searchOrders = useCallback((query: string) => window.traceMatch.orders.search(query), [])
+  const getNextOrderNumber = useCallback(() => window.traceMatch.orders.nextNumber(), [])
+
   const createOrder = useCallback(async (input: Omit<AcceptanceOrder, 'id' | 'createdAt'>) => {
     if (dirty && !window.confirm('当前验收单有未保存的导入结果。新建后将放弃这些更改，是否继续？')) return null
     const order = await run(() => window.traceMatch.orders.create(input), '正在新建验收单…')
@@ -159,6 +162,6 @@ export function useTraceMatch() {
   return {
     orders, currentOrder, shipments: pendingShipments ?? shipments, scans: pendingScans ?? scans,
     results, stats, dirty, busy, status, setStatus, selectOrder, createOrder, deleteOrder,
-    setImportedShipments, setImportedScans, compare, save
+    searchOrders, getNextOrderNumber, setImportedShipments, setImportedScans, compare, save
   }
 }
