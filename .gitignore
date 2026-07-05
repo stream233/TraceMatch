@@ -10,3 +10,10 @@ installer/
 *.suo
 *.exe
 *.msi
+node_modules/
+out/
+dist/
+release/
+*.log
+.vite/
+*.tsbuildinfo

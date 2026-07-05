@@ -1,0 +1,67 @@
+{
+  "name": "tracematch",
+  "version": "1.0.9",
+  "description": "Medicine trace-code arrival reconciliation desktop app",
+  "main": "./out/main/index.js",
+  "author": "TraceMatch",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
+    "package:win": "pnpm build && electron-builder --win nsis --x64"
+  },
+  "build": {
+    "appId": "com.tracematch.desktop",
+    "productName": "TraceMatch",
+    "asar": true,
+    "files": [
+      "out/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "Assets/TraceMatch.ico",
+        "to": "TraceMatch.ico"
+      }
+    ],
+    "win": {
+      "icon": "Assets/TraceMatch.ico",
+      "target": "nsis"
+    },
+    "nsis": {
+      "artifactName": "TraceMatchSetup.${ext}",
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  },
+  "dependencies": {
+    "csv-parse": "^7.0.1",
+    "exceljs": "^4.4.0",
+    "fast-xml-parser": "^5.9.3",
+    "iconv-lite": "^0.7.2",
+    "lucide-react": "^1.23.0",
+    "pdfkit": "^0.19.1",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "semver": "^7.8.5",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.0",
+    "@types/pdfkit": "^0.17.6",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@types/semver": "^7.7.1",
+    "@vitejs/plugin-react": "^6.0.3",
+    "electron": "^43.0.0",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^5.0.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.1.3"
+  }
+}

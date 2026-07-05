@@ -1,198 +1,83 @@
 # TraceMatch
 
-TraceMatch 是一个 Windows 桌面端药品追溯码到货比对工具，用于仓库在离线扫码后，将扫码设备导出的追溯码文件与“码上放心”等平台下载的上游出库数据进行本地比对，判断实际到货是否与发货数据一致。
-
-当前版本是 MVP，重点完成批量导入、字段映射、追溯码清洗、SQLite 持久化、批量比对、结果展示和 Excel/PDF 验收报告导出。不包含自动下载、上传、ERP 集成或平台接口对接。
+TraceMatch 是一个面向 Windows 仓库验收场景的药品追溯码到货比对工具。当前主应用已在 `electron-rewrite` 分支重构为 Electron + React + TypeScript；原 WPF 源码暂时保留在仓库根目录，便于核对迁移前后的业务规则。
 
 ## 技术栈
 
-- C#
-- .NET 8
-- WPF
-- SQLite
-- MVVM
-- Microsoft.Data.Sqlite
-- ClosedXML
-- ExcelDataReader
-- QuestPDF
+- Electron 43
+- React 19 + TypeScript
+- electron-vite + Vite
+- Node.js 内置 `node:sqlite`
+- ExcelJS / SheetJS / PDFKit
+- electron-builder + NSIS
 
-## 核心功能
+## 已迁移功能
 
-- 新建验收单：验收单号、操作员、创建时间、备注；供应商可由平台发货文件自动识别。
-- 导入平台发货数据：支持 CSV、TXT、XLSX、XLS，兼容“$供应商,单号 + 明细 + #”格式的码上放心 TXT。
-- 导入扫码设备文件：支持 CSV、TXT、XLSX、XLS、XML，兼容扫码机导出的 `PurchaseWareHouseIn` XML。
-- 导入时支持字段映射，适配平台文件字段名变化。
-- 自动清洗追溯码中的空格、换行符、制表符等无效字符。
-- 使用 SQLite 保存验收单、平台发货码、扫描记录和比对结果。
-- 扫描文件导入后可自动批量比对。
-- 导入和比对结果先保存在当前界面，点击“保存”后才写入 SQLite。
-- 主界面展示应到、扫描、匹配、未到货、多到货、重复扫码统计。
-- 结果表格按扫描时间倒序显示，并用颜色标识状态。
-- 支持导出 Excel 和 PDF 验收报告，包含汇总统计与异常明细。
+- 新建、切换和删除验收单
+- 兼容原 `%LOCALAPPDATA%\TraceMatch\tracematch.db` 数据库
+- 导入 CSV、TXT、XLSX、XLSM、XLS 和扫描设备 XML
+- 兼容“码上放心”供应商/平台单号头部格式
+- 字段自动识别、手动映射和首行预览
+- 追溯码清洗、匹配、未到货、多到货和重复扫码识别
+- 导入结果暂存，显式保存后再替换 SQLite 记录
+- 状态筛选、全文搜索和追溯码复制
+- 单击比对结果，在右侧查看完整药品与扫描信息
+- 持久化显示设置，可选择是否将异常比对结果置顶
+- 导出 Excel 异常明细和 PDF 验收报告
+- GitHub Releases 更新检查；启动失败保持静默，手动检查提供下载页入口
+- Windows NSIS 安装包构建
 
-## 比对规则
+## 目录
 
-| 状态 | 规则 | 界面颜色 |
-| --- | --- | --- |
-| 匹配 | 平台发货数据中存在该追溯码，且扫码文件中只出现一次 | 绿色 |
-| 多到货 | 扫码文件中存在该追溯码，但平台发货数据中不存在 | 红色 |
-| 未到货 | 平台发货数据中存在该追溯码，但扫码文件中没有 | 橙色 |
-| 重复扫码 | 扫码文件中同一追溯码出现多次 | 黄色 |
+```text
+src/
+├─ main/                 Electron 主进程、SQLite、文件导入、报告导出
+├─ preload/              最小权限 IPC 桥
+├─ renderer/             React 工作台
+└─ shared/               主进程与渲染层共享类型
+design/
+└─ electron-visual-spec.md
+```
 
-## 导入字段
+## 开发
 
-平台发货数据建议包含以下字段：
+需要 Node.js 20.19+ 和 pnpm。
 
-- 追溯码
-- 药品名称
-- 规格
-- 批号
-- 生产企业
-- 生产日期
-- 有效期
-- 数量
+```powershell
+pnpm install
+pnpm dev
+```
 
-码上放心 TXT 固定格式按以下列读取：
+## 验证与构建
 
-- 第 1 列：追溯码
-- 第 2 列：药品名称
-- 第 3 列：批号
-- 第 4 列：生产日期
+```powershell
+pnpm typecheck
+pnpm build
+pnpm package:win
+```
 
-扫描设备导出文件至少需要包含：
+也可以使用发布脚本：
 
-- 追溯码
+```powershell
+.\publish.ps1
+.\publish.ps1 -BuildInstaller
+```
 
-可选字段：
+安装包输出到 `dist\TraceMatchSetup.exe`。
 
-- 扫描时间
+## 数据兼容
 
-导入时会弹出字段映射窗口。只要文件有表头，即使字段名不是完全一致，也可以手动选择对应列。
-
-## 数据库
-
-数据库文件保存位置：
+Electron 版本继续使用原数据库位置：
 
 ```text
 %LOCALAPPDATA%\TraceMatch\tracematch.db
 ```
 
-建表 SQL 位于：
+数据库表名、字段和状态值保持不变，因此无需转换旧数据。用户设置仍保存在同目录的 `settings.json`，并兼容原 WPF 版本的导入目录字段。
 
-```text
-Database/schema.sql
-```
+## 安全边界
 
-主要数据表：
-
-- `acceptance_orders`：验收单
-- `shipment_items`：平台发货追溯码
-- `scan_records`：扫码设备扫描记录
-- `comparison_results`：比对结果
-
-## 项目结构
-
-```text
-TraceMatch
-├─ App.xaml
-├─ MainWindow.xaml
-├─ TraceMatch.csproj
-├─ Converters
-│  └─ StatusBrushConverter.cs
-├─ Data
-│  ├─ AppDatabase.cs
-│  └─ AcceptanceRepository.cs
-├─ Database
-│  └─ schema.sql
-├─ Models
-│  ├─ AcceptanceOrder.cs
-│  ├─ ShipmentItem.cs
-│  ├─ ScanRecord.cs
-│  ├─ ComparisonResult.cs
-│  ├─ SummaryStats.cs
-│  ├─ ImportModels.cs
-│  └─ TraceCodeStatus.cs
-├─ Services
-│  ├─ FileImportService.cs
-│  ├─ TraceCodeCleaner.cs
-│  ├─ ComparisonService.cs
-│  └─ ReportExportService.cs
-├─ ViewModels
-│  ├─ MainViewModel.cs
-│  ├─ ViewModelBase.cs
-│  ├─ RelayCommand.cs
-│  └─ AsyncRelayCommand.cs
-└─ Views
-   ├─ FieldMappingWindow.xaml
-   └─ FieldMappingWindow.xaml.cs
-```
-
-## 运行方式
-
-需要安装 .NET 8 SDK。
-
-```powershell
-dotnet restore
-dotnet build
-dotnet run
-```
-
-也可以在 Visual Studio 2022 中打开 `TraceMatch.csproj` 后直接运行。
-
-## 使用流程
-
-1. 启动软件。
-2. 填写验收单号、操作员、备注；供应商可以先留空。
-3. 点击“新建验收单”。
-4. 点击“导入平台发货数据”，选择 CSV、TXT 或 Excel 文件。
-5. 在字段映射窗口中选择平台文件列名；如果平台 TXT 文件头包含供应商，软件会自动回填验收单供应商。
-6. 点击“导入扫描文件”，选择扫码设备导出的文件。
-7. 在字段映射窗口中选择追溯码列，可选扫描时间列。
-8. 软件自动比对并展示统计与结果明细。
-9. 点击“保存”将本次导入和比对结果写入本机 SQLite。
-10. 点击“导出 Excel”或“导出 PDF”生成验收报告。
-
-## 当前限制
-
-- XML 扫码文件已支持 `<Data Code="..." ActDate="...">` 结构；其他 XML 结构可继续扩展映射规则。
-- PDF 报告异常明细最多输出前 300 条，Excel 报告输出全部异常明细。
-- 旧版 `.xls` 通过 ExcelDataReader 支持读取，但实际文件质量取决于导出来源。
-- 当前未做用户权限、自动更新、平台登录、自动下载、上传或 ERP 集成。
-
-## 验证
-
-当前项目已通过构建：
-
-```powershell
-dotnet build
-```
-
-构建结果：0 警告，0 错误。
-## PowerShell Hotkeys
-
-Hotkey script:
-
-```text
-tools/Enable-TraceMatchHotkeys.ps1
-```
-
-Temporary use in one PowerShell window:
-
-```powershell
-powershell -ExecutionPolicy Bypass -NoProfile
-. "D:\TraceMatch\tools\Enable-TraceMatchHotkeys.ps1"
-```
-
-Install into the current user's PowerShell profile:
-
-```powershell
-Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
-powershell -ExecutionPolicy Bypass -File "D:\TraceMatch\tools\Enable-TraceMatchHotkeys.ps1" -InstallProfile
-```
-
-Shortcuts:
-
-- `Ctrl+B`: build TraceMatch Release
-- `Ctrl+Shift+B`: publish and build installer
-
-Note: some terminals may reserve `Ctrl+Shift+B` before PowerShell receives it.
+- 渲染层启用上下文隔离和沙箱，关闭 Node.js 集成。
+- preload 只暴露业务所需的窄接口，不向页面暴露原始 `ipcRenderer`。
+- IPC 校验调用来源；外链仅允许打开 TraceMatch GitHub 仓库页面。
+- 应用只加载本地打包内容，拒绝权限请求和新窗口导航。
