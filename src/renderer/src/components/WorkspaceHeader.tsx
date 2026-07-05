@@ -1,13 +1,12 @@
-import { CalendarDays, Trash2, UserRound } from 'lucide-react'
+import { CalendarDays, UserRound } from 'lucide-react'
 import type { AcceptanceOrder } from '../../../shared/types'
 
 interface Props {
   order: AcceptanceOrder | null
   dirty: boolean
-  onDelete(): void
 }
 
-export function WorkspaceHeader({ order, dirty, onDelete }: Props) {
+export function WorkspaceHeader({ order, dirty }: Props) {
   if (!order) {
     return <header className="workspace-header workspace-header--empty"><div><h1>到货比对工作台</h1><p>从左侧新建或选择一个验收单。</p></div></header>
   }
@@ -20,7 +19,6 @@ export function WorkspaceHeader({ order, dirty, onDelete }: Props) {
       <div className="workspace-meta">
         <span><UserRound size={15} />操作员 {order.operator}</span>
         <span><CalendarDays size={15} />{new Date(order.createdAt).toLocaleString('zh-CN', { hour12: false })}</span>
-        <button className="icon-button icon-button--danger" type="button" title="删除验收单" onClick={onDelete}><Trash2 size={17} /></button>
       </div>
     </header>
   )

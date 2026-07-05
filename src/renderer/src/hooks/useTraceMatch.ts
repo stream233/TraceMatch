@@ -81,14 +81,19 @@ export function useTraceMatch() {
     return order
   }, [dirty, orders, run])
 
-  const deleteOrder = useCallback(async () => {
-    if (!currentOrder) return
-    if (!window.confirm(`确定删除验收单 ${currentOrder.orderNumber} 吗？\n\n发货数据、扫描记录和比对结果会同时删除。`)) return
-    const deletedId = currentOrder.id
+  const deleteOrder = useCallback(async (order?: AcceptanceOrder) => {
+    const target = order ?? currentOrder
+    if (!target) return
+    if (!window.confirm(`确定删除验收单 ${target.orderNumber} 吗？\n\n发货数据、扫描记录和比对结果会同时删除。`)) return
+    const deletedId = target.id
     const done = await run(() => window.traceMatch.orders.delete(deletedId), '正在删除验收单…')
     if (done === null) return
     const nextOrders = orders.filter((item) => item.id !== deletedId)
     setOrders(nextOrders)
+    if (deletedId !== currentOrder?.id) {
+      setStatus(`验收单 ${target.orderNumber} 已删除。`)
+      return
+    }
     setCurrentOrder(null)
     setShipments([])
     setScans([])

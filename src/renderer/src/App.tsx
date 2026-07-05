@@ -74,7 +74,7 @@ export default function App() {
     try {
       const saved = await window.traceMatch.settings.update(settings)
       setAppSettings(saved)
-      store.setStatus(saved.pinAbnormalResults ? '已开启：比对异常置顶。' : '已关闭：比对结果按扫描时间显示。')
+      store.setStatus(saved.pinAbnormalResults ? '已开启：比对异常结果置顶。' : '已关闭：比对结果按扫描时间显示。')
       return true
     } catch (error) {
       window.alert(`设置保存失败\n\n${error instanceof Error ? error.message : String(error)}`)
@@ -84,9 +84,9 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <Sidebar orders={store.orders} currentId={store.currentOrder?.id} onSelect={(order) => void store.selectOrder(order)} onCreate={() => setShowCreate(true)} onSettings={() => setShowSettings(true)} onAbout={() => setShowAbout(true)} />
+      <Sidebar orders={store.orders} currentId={store.currentOrder?.id} onSelect={(order) => void store.selectOrder(order)} onDelete={(order) => void store.deleteOrder(order)} onCreate={() => setShowCreate(true)} onSettings={() => setShowSettings(true)} onAbout={() => setShowAbout(true)} />
       <main className="workspace">
-        <WorkspaceHeader order={store.currentOrder} dirty={store.dirty} onDelete={() => void store.deleteOrder()} />
+        <WorkspaceHeader order={store.currentOrder} dirty={store.dirty} />
         <WorkflowToolbar disabled={!store.currentOrder} busy={store.busy} dirty={store.dirty} hasResults={store.results.length > 0}
           onImportShipment={() => void beginImport('shipment')} onImportScan={() => void beginImport('scan')}
           onCompare={() => void store.compare()} onSave={() => void store.save()} onExport={(format) => void exportReport(format)} />
