@@ -1,6 +1,6 @@
 {
   "name": "tracematch",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Medicine trace-code arrival reconciliation desktop app",
   "main": "./out/main/index.js",
   "author": "TraceMatch",
