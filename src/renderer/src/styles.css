@@ -27,7 +27,7 @@ button { color: inherit; }
 .app-shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); width: 100%; height: 100%; background: var(--canvas); }
 .sidebar { display: flex; flex-direction: column; min-height: 0; padding: 22px 16px 16px; color: #f6fbf8; background: var(--forest); border-right: 1px solid #102f27; }
 .brand { display: flex; align-items: center; gap: 11px; padding: 0 5px 21px; }
-.brand__mark, .about-product__mark { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 9px; color: var(--forest); background: #d9ebdf; font-size: 13px; font-weight: 800; letter-spacing: -0.4px; }
+.brand__mark, .about-product__mark { display: block; width: 38px; height: 38px; border-radius: 9px; object-fit: cover; }
 .brand strong { display: block; font-size: 18px; line-height: 1.2; letter-spacing: -0.3px; }
 .brand small { display: block; margin-top: 3px; color: #9fb9ad; font-size: 11px; letter-spacing: .12em; }
 .new-order-button { display: flex; align-items: center; justify-content: center; gap: 8px; height: 38px; border: 1px solid #6e9b88; border-radius: 7px; color: #14352b; background: #e5f1e9; font-size: 13px; font-weight: 700; cursor: pointer; transition: background .16s ease, transform .16s ease; }
@@ -202,7 +202,7 @@ tbody tr.is-selected:hover td { background: #e3eee8; }
 .mapping-preview b, .mapping-preview em { padding: 6px 7px; border-right: 1px solid #e2e8e4; overflow: hidden; font-size: 9px; font-style: normal; text-overflow: ellipsis; white-space: nowrap; }
 .mapping-preview b { color: #536159; background: #edf2ef; } .mapping-preview em { color: #728078; background: #fff; }
 .about-product { display: flex; align-items: center; gap: 13px; }
-.about-product__mark { width: 52px; height: 52px; color: #e9f6ef; background: var(--forest); }
+.about-product__mark { width: 52px; height: 52px; }
 .about-product strong { display: block; font-size: 18px; } .about-product p { margin: 5px 0 0; color: var(--muted); font-size: 11px; }
 .about-copy { margin: 20px 0; color: #65726b; font-size: 11px; line-height: 1.75; }
 .about-actions { display: flex; gap: 8px; }

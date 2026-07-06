@@ -2,6 +2,7 @@ import { CircleHelp, FilePlus2, FolderOpen, Search, Settings, Trash2 } from 'luc
 import { useDeferredValue, useEffect, useState, type KeyboardEvent, type MouseEvent } from 'react'
 import { createPortal } from 'react-dom'
 import type { AcceptanceOrder } from '../../../shared/types'
+import { appIconUrl } from '../appAssets'
 
 interface OrderContextMenu {
   order: AcceptanceOrder
@@ -93,7 +94,7 @@ export function Sidebar({ orders, currentId, onSearch, onSelect, onDelete, onCre
   return (
     <aside className="sidebar">
       <div className="brand">
-        <span className="brand__mark">TM</span>
+        <img className="brand__mark" src={appIconUrl} alt="" aria-hidden="true" />
         <div><strong>TraceMatch</strong><small>到货比对</small></div>
       </div>
       <button className="new-order-button" type="button" onClick={onCreate}><FilePlus2 size={17} />新建验收单</button>

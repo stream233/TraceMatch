@@ -1,6 +1,7 @@
 import { ExternalLink, GitBranch, RefreshCcw } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { ReleaseInfo } from '../../../shared/types'
+import { appIconUrl } from '../appAssets'
 import { Modal } from './Modal'
 
 const releasesUrl = 'https://github.com/stream233/TraceMatch/releases/latest'
@@ -30,7 +31,7 @@ export function AboutDialog({ onClose }: Props) {
   return (
     <Modal title="关于 TraceMatch" description="药品追溯码到货比对工具" onClose={onClose} width="small"
       footer={<button className="button button--primary" onClick={onClose}>完成</button>}>
-      <div className="about-product"><span className="about-product__mark">TM</span><div><strong>TraceMatch</strong><p>V {version}</p></div></div>
+      <div className="about-product"><img className="about-product__mark" src={appIconUrl} alt="" aria-hidden="true" /><div><strong>TraceMatch</strong><p>V {version}</p></div></div>
       <p className="about-copy">数据和比对结果保存在本机 SQLite 数据库中。应用不上传业务数据，也不连接 ERP 或平台账号。</p>
       <div className="about-actions">
         <button className="button button--secondary" disabled={checking} onClick={() => void check()}><RefreshCcw className={checking ? 'is-spinning' : ''} size={16} />检查更新</button>
