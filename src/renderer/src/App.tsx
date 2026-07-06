@@ -20,7 +20,7 @@ export default function App() {
   const [newOrderNumber, setNewOrderNumber] = useState<string | null>(null)
   const [showSettings, setShowSettings] = useState(false)
   const [showAbout, setShowAbout] = useState(false)
-  const [appSettings, setAppSettings] = useState<AppSettings>({ pinAbnormalResults: false })
+  const [appSettings, setAppSettings] = useState<AppSettings>({ pinAbnormalResults: true })
   const [mappingRequest, setMappingRequest] = useState<MappingRequest | null>(null)
   const [startupRelease, setStartupRelease] = useState<ReleaseInfo | null>(null)
 

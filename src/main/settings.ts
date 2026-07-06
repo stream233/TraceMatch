@@ -41,7 +41,7 @@ export class UserSettings {
 
   getAppSettings(): AppSettings {
     return {
-      pinAbnormalResults: this.data.PinAbnormalResults ?? this.data.pinAbnormalResults ?? false
+      pinAbnormalResults: this.data.PinAbnormalResults ?? this.data.pinAbnormalResults ?? true
     }
   }
 

@@ -36,7 +36,7 @@ const results: ComparisonResult[] = statuses.map((status, index) => ({
 const resultSearchText = results.map((item) => `${item.traceCode} ${item.batchNumber}`).join(' ')
 
 let orders = [order]
-let appSettings = { pinAbnormalResults: false }
+let appSettings = { pinAbnormalResults: true }
 
 export function installMockApi(): void {
   const api: TraceMatchApi = {
