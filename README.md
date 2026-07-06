@@ -1,6 +1,6 @@
 # TraceMatch
 
-TraceMatch 是一个面向 Windows 仓库验收场景的药品追溯码到货比对工具。当前主应用已在 `electron-rewrite` 分支重构为 Electron + React + TypeScript；原 WPF 源码暂时保留在仓库根目录，便于核对迁移前后的业务规则。
+TraceMatch 是一个面向 Windows 仓库验收场景的药品追溯码到货比对工具，采用 Electron + React + TypeScript 构建。
 
 ## 技术栈
 
@@ -11,7 +11,7 @@ TraceMatch 是一个面向 Windows 仓库验收场景的药品追溯码到货比
 - ExcelJS / SheetJS / PDFKit
 - electron-builder + NSIS
 
-## 已迁移功能
+## 主要功能
 
 - 新建、切换和删除验收单
 - 兼容原 `%LOCALAPPDATA%\TraceMatch\tracematch.db` 数据库

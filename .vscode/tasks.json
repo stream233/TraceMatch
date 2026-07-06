@@ -2,24 +2,23 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "TraceMatch: 编译",
+      "label": "TraceMatch: 类型检查",
       "type": "shell",
-      "command": "dotnet build",
-      "problemMatcher": "$msCompile",
-      "group": "build"
+      "command": "pnpm typecheck",
+      "problemMatcher": []
     },
     {
-      "label": "TraceMatch: 发布 EXE",
+      "label": "TraceMatch: 构建",
       "type": "shell",
-      "command": "powershell -ExecutionPolicy Bypass -File D:\\TraceMatch\\publish.ps1",
-      "problemMatcher": "$msCompile",
+      "command": "pnpm build",
+      "problemMatcher": [],
       "group": "build"
     },
     {
       "label": "TraceMatch: 生成安装包",
       "type": "shell",
-      "command": "powershell -ExecutionPolicy Bypass -File D:\\TraceMatch\\publish.ps1 -BuildInstaller",
-      "problemMatcher": "$msCompile",
+      "command": "pnpm package:win",
+      "problemMatcher": [],
       "group": "build"
     }
   ]
