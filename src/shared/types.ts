@@ -120,6 +120,7 @@ export interface ReleaseInfo {
 
 export interface AppSettings {
   pinAbnormalResults: boolean
+  defaultOperator: string
 }
 
 export interface TraceMatchApi {
@@ -127,6 +128,7 @@ export interface TraceMatchApi {
     getVersion(): Promise<string>
     openExternal(url: string): Promise<void>
     copyText(text: string): Promise<void>
+    quit(): Promise<void>
   }
   orders: {
     list(): Promise<AcceptanceOrder[]>

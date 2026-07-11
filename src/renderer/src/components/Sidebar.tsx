@@ -2,7 +2,6 @@ import { CircleHelp, FilePlus2, FolderOpen, Search, Settings, Trash2 } from 'luc
 import { useDeferredValue, useEffect, useState, type KeyboardEvent, type MouseEvent } from 'react'
 import { createPortal } from 'react-dom'
 import type { AcceptanceOrder } from '../../../shared/types'
-import { appIconUrl } from '../appAssets'
 
 interface OrderContextMenu {
   order: AcceptanceOrder
@@ -93,12 +92,8 @@ export function Sidebar({ orders, currentId, onSearch, onSelect, onDelete, onCre
 
   return (
     <aside className="sidebar">
-      <div className="brand">
-        <img className="brand__mark" src={appIconUrl} alt="" aria-hidden="true" />
-        <div><strong>TraceMatch</strong><small>到货比对</small></div>
-      </div>
       <button className="new-order-button" type="button" onClick={onCreate}><FilePlus2 size={17} />新建验收单</button>
-      <label className="sidebar-search"><Search size={15} /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索单号/追溯码/批号" aria-label="搜索验收单号、追溯码或批号" /></label>
+      <label className="sidebar-search"><Search size={15} /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索" aria-label="搜索验收单号、追溯码或批号" /></label>
       <div className="sidebar-section-title"><span>{deferredQuery ? '搜索结果' : '最近验收'}</span><b>{searching ? '…' : visibleOrders.length}</b></div>
       <nav className="order-list" aria-label="验收单列表">
         {visibleOrders.map((order) => (

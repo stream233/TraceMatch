@@ -1,6 +1,7 @@
 import path from 'node:path'
 import { app, BrowserWindow, clipboard, dialog, ipcMain, shell, type IpcMainInvokeEvent } from 'electron'
 import type { AcceptanceOrder, AppSettings, ExportPayload, FieldMapping, ImportKind, ImportTable, SaveWorkspacePayload } from '../shared/types'
+import { isApplicationExpired } from '../shared/availability'
 import { TraceMatchDatabase } from './database'
 import { compareRecords } from './services/comparison'
 import { readImportTable, toScanRecords, toShipmentItems } from './services/importer'
@@ -14,9 +15,18 @@ function assertTrustedSender(event: IpcMainInvokeEvent): void {
   if (!trusted) throw new Error('拒绝来自未知页面的应用请求。')
 }
 
+const expiryAllowedChannels = new Set(['app:version', 'app:open-external', 'app:quit', 'update:check'])
+
+function assertApplicationAvailable(channel: string): void {
+  if (isApplicationExpired() && !expiryAllowedChannels.has(channel)) {
+    throw new Error('当前版本不可用，请升级版本。')
+  }
+}
+
 function handle<T extends unknown[], R>(channel: string, callback: (...args: T) => R | Promise<R>): void {
   ipcMain.handle(channel, async (event, ...args: T) => {
     assertTrustedSender(event)
+    assertApplicationAvailable(channel)
     return callback(...args)
   })
 }
@@ -24,6 +34,7 @@ function handle<T extends unknown[], R>(channel: string, callback: (...args: T) 
 export function registerIpc(database: TraceMatchDatabase, settings: UserSettings): void {
   handle('app:version', () => app.getVersion())
   handle('app:copy-text', (text: string) => clipboard.writeText(text.slice(0, 10_000)))
+  handle('app:quit', () => app.quit())
   handle('app:open-external', async (url: string) => {
     const parsed = new URL(url)
     if (parsed.protocol !== 'https:' || parsed.hostname !== 'github.com' || !parsed.pathname.startsWith('/stream233/TraceMatch')) {

@@ -4,14 +4,15 @@ import { Modal } from './Modal'
 
 interface Props {
   initialOrderNumber: string
+  defaultOperator: string
   onClose(): void
   onCreate(input: Omit<AcceptanceOrder, 'id' | 'createdAt'>): Promise<unknown>
 }
 
-export function CreateOrderDialog({ initialOrderNumber, onClose, onCreate }: Props) {
+export function CreateOrderDialog({ initialOrderNumber, defaultOperator, onClose, onCreate }: Props) {
   const [orderNumber, setOrderNumber] = useState(initialOrderNumber)
   const [supplier, setSupplier] = useState('')
-  const [operator, setOperator] = useState('211')
+  const [operator, setOperator] = useState(defaultOperator)
   const [remark, setRemark] = useState('')
   const submit = async () => {
     if (!orderNumber.trim() || !operator.trim()) return

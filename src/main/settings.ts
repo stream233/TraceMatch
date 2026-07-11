@@ -11,6 +11,14 @@ interface SettingsFile {
   lastScanImportDirectory?: string
   PinAbnormalResults?: boolean
   pinAbnormalResults?: boolean
+  DefaultOperator?: string
+  defaultOperator?: string
+}
+
+const DEFAULT_OPERATOR = '211'
+
+function normalizeOperator(value: unknown): string {
+  return typeof value === 'string' && value.trim() ? value.trim().slice(0, 60) : DEFAULT_OPERATOR
 }
 
 export class UserSettings {
@@ -41,13 +49,16 @@ export class UserSettings {
 
   getAppSettings(): AppSettings {
     return {
-      pinAbnormalResults: this.data.PinAbnormalResults ?? this.data.pinAbnormalResults ?? true
+      pinAbnormalResults: this.data.PinAbnormalResults ?? this.data.pinAbnormalResults ?? true,
+      defaultOperator: normalizeOperator(this.data.DefaultOperator ?? this.data.defaultOperator)
     }
   }
 
   updateAppSettings(settings: AppSettings): AppSettings {
     this.data.PinAbnormalResults = settings.pinAbnormalResults
+    this.data.DefaultOperator = normalizeOperator(settings.defaultOperator)
     delete this.data.pinAbnormalResults
+    delete this.data.defaultOperator
     this.save()
     return this.getAppSettings()
   }

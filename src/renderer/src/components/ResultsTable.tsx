@@ -1,5 +1,5 @@
-import { Barcode, ClipboardCopy, Search, SlidersHorizontal } from 'lucide-react'
-import { useDeferredValue, useMemo, useState } from 'react'
+import { ArrowDown, ArrowDownUp, ArrowUp, Barcode, ClipboardCopy, Search, SlidersHorizontal } from 'lucide-react'
+import { useDeferredValue, useMemo, useState, type KeyboardEvent } from 'react'
 import { statusLabels, type ComparisonResult, type ResultFilter, type TraceCodeStatus } from '../../../shared/types'
 import { DrugDetailPanel } from './DrugDetailPanel'
 
@@ -14,10 +14,26 @@ const filters: { value: ResultFilter; label: string }[] = [
   { value: 2, label: '未到货' }, { value: 3, label: '多到货' }, { value: 4, label: '重复扫码' }
 ]
 
+type SortKey = 'status' | 'traceCode' | 'drugName' | 'specification' | 'batchNumber' | 'manufacturer' | 'productionDate' | 'expiryDate' | 'quantity' | 'scannedAt'
+type SortDirection = 'asc' | 'desc'
+
+const columns: { key: SortKey; label: string; numeric?: boolean }[] = [
+  { key: 'status', label: '状态' }, { key: 'traceCode', label: '追溯码' }, { key: 'drugName', label: '药品名称' },
+  { key: 'specification', label: '规格' }, { key: 'batchNumber', label: '批号' }, { key: 'manufacturer', label: '生产企业' },
+  { key: 'productionDate', label: '生产日期' }, { key: 'expiryDate', label: '有效期' }, { key: 'quantity', label: '数量', numeric: true },
+  { key: 'scannedAt', label: '扫描时间' }
+]
+
+function compareResults(left: ComparisonResult, right: ComparisonResult, key: SortKey): number {
+  if (key === 'status' || key === 'quantity') return left[key] - right[key]
+  return (left[key] ?? '').localeCompare(right[key] ?? '', 'zh-CN', { numeric: true, sensitivity: 'base' })
+}
+
 export function ResultsTable({ results, pinAbnormalResults, onStatus }: Props) {
   const [filter, setFilter] = useState<ResultFilter>('all')
   const [query, setQuery] = useState('')
   const [selectedResult, setSelectedResult] = useState<ComparisonResult | null>(null)
+  const [sort, setSort] = useState<{ key: SortKey; direction: SortDirection } | null>(null)
   const deferredQuery = useDeferredValue(query.trim().toLowerCase())
   const visible = useMemo(() => results
     .filter((item) => {
@@ -27,12 +43,28 @@ export function ResultsTable({ results, pinAbnormalResults, onStatus }: Props) {
       return `${item.traceCode} ${item.drugName} ${item.batchNumber} ${item.manufacturer}`.toLowerCase().includes(deferredQuery)
     })
     .sort((a, b) => {
+      if (sort) {
+        const comparison = compareResults(a, b, sort.key)
+        return sort.direction === 'asc' ? comparison : -comparison
+      }
       if (pinAbnormalResults) {
         const abnormalOrder = Number(a.status === 1) - Number(b.status === 1)
         if (abnormalOrder !== 0) return abnormalOrder
       }
       return (b.scannedAt ?? '').localeCompare(a.scannedAt ?? '') || (b.id ?? 0) - (a.id ?? 0)
-    }), [deferredQuery, filter, pinAbnormalResults, results])
+    }), [deferredQuery, filter, pinAbnormalResults, results, sort])
+
+  const toggleSort = (key: SortKey) => {
+    setSort((current) => current?.key === key && current.direction === 'asc'
+      ? { key, direction: 'desc' }
+      : { key, direction: 'asc' })
+  }
+
+  const handleSortKeyDown = (event: KeyboardEvent<HTMLTableCellElement>, key: SortKey) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return
+    event.preventDefault()
+    toggleSort(key)
+  }
 
   const copyCode = async (code: string) => {
     await window.traceMatch.app.copyText(code)
@@ -50,7 +82,17 @@ export function ResultsTable({ results, pinAbnormalResults, onStatus }: Props) {
       </header>
       <div className="table-scroll">
         <table>
-          <thead><tr><th>状态</th><th>追溯码</th><th>药品名称</th><th>规格</th><th>批号</th><th>生产企业</th><th>生产日期</th><th>有效期</th><th className="number-cell">数量</th><th>扫描时间</th></tr></thead>
+          <thead><tr>{columns.map((column) => {
+            const isSorted = sort?.key === column.key
+            const SortIcon = !isSorted ? ArrowDownUp : sort.direction === 'asc' ? ArrowUp : ArrowDown
+            const directionLabel = isSorted ? (sort.direction === 'asc' ? '升序' : '降序') : '未排序'
+            return <th key={column.key} className={`is-sortable${column.numeric ? ' number-cell' : ''}${isSorted ? ' is-sorted' : ''}`}
+              aria-sort={isSorted ? (sort.direction === 'asc' ? 'ascending' : 'descending') : 'none'} tabIndex={0}
+              title={`双击按${column.label}${isSorted ? `切换为${sort.direction === 'asc' ? '降序' : '升序'}` : '升序'}排列`}
+              onDoubleClick={() => toggleSort(column.key)} onKeyDown={(event) => handleSortKeyDown(event, column.key)}>
+              <span className={`table-sort-label${column.numeric ? ' table-sort-label--number' : ''}`}>{column.label}<SortIcon size={13} aria-label={directionLabel} /></span>
+            </th>
+          })}</tr></thead>
           <tbody>
             {visible.map((item, index) => (
               <tr className={`${item.status === 1 ? '' : 'is-abnormal'}${selectedResult === item ? ' is-selected' : ''}`}

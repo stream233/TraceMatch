@@ -25,11 +25,9 @@ button, input, select, textarea { font: inherit; }
 button { color: inherit; }
 
 .app-shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); width: 100%; height: 100%; background: var(--canvas); }
+.app-shell--expired { display: block; }
 .sidebar { display: flex; flex-direction: column; min-height: 0; padding: 22px 16px 16px; color: #f6fbf8; background: var(--forest); border-right: 1px solid #102f27; }
-.brand { display: flex; align-items: center; gap: 11px; padding: 0 5px 21px; }
-.brand__mark, .about-product__mark { display: block; width: 38px; height: 38px; border-radius: 9px; object-fit: cover; }
-.brand strong { display: block; font-size: 18px; line-height: 1.2; letter-spacing: -0.3px; }
-.brand small { display: block; margin-top: 3px; color: #9fb9ad; font-size: 11px; letter-spacing: .12em; }
+.about-product__mark { display: block; width: 38px; height: 38px; border-radius: 9px; object-fit: cover; }
 .new-order-button { display: flex; align-items: center; justify-content: center; gap: 8px; height: 38px; border: 1px solid #6e9b88; border-radius: 7px; color: #14352b; background: #e5f1e9; font-size: 13px; font-weight: 700; cursor: pointer; transition: background .16s ease, transform .16s ease; }
 .new-order-button:hover { background: #f5fbf7; transform: translateY(-1px); }
 .sidebar-search { display: flex; align-items: center; gap: 8px; height: 34px; margin-top: 17px; padding: 0 10px; border: 1px solid #376355; border-radius: 6px; color: #9fbbb0; background: #12342b; }
@@ -119,6 +117,13 @@ button { color: inherit; }
 .table-scroll::-webkit-scrollbar-thumb { border: 2px solid #fff; border-radius: 8px; background: #c9d2cd; }
 table { width: 100%; min-width: 1077px; border-collapse: separate; border-spacing: 0; table-layout: fixed; font-size: 11px; }
 th { position: sticky; z-index: 2; top: 0; height: 36px; padding: 0 10px; border-bottom: 1px solid var(--border); color: #5f6e66; background: #f7f9f7; font-size: 10px; font-weight: 800; text-align: left; white-space: nowrap; }
+th.is-sortable { cursor: pointer; user-select: none; transition: color .14s ease, background .14s ease; }
+th.is-sortable:hover, th.is-sortable.is-sorted { color: #1d5544; background: #edf4ef; }
+th.is-sortable:focus-visible { outline: 2px solid #709c8a; outline-offset: -2px; }
+.table-sort-label { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; }
+.table-sort-label--number { justify-content: flex-end; width: 100%; }
+.table-sort-label svg { flex: 0 0 auto; color: #719080; }
+th.is-sorted .table-sort-label svg { color: #1d5544; }
 th:nth-child(1) { width: 80px; } th:nth-child(2) { width: 160px; } th:nth-child(3) { width: 145px; } th:nth-child(4) { width: 90px; }
 th:nth-child(5) { width: 100px; } th:nth-child(6) { width: 145px; } th:nth-child(7), th:nth-child(8) { width: 92px; } th:nth-child(9) { width: 55px; } th:nth-child(10) { width: 118px; }
 td { height: 42px; padding: 0 10px; border-bottom: 1px solid #edf0ee; color: #334139; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; content-visibility: auto; }
@@ -175,6 +180,9 @@ tbody tr.is-selected:hover td { background: #e3eee8; }
 .modal__header p { margin: 6px 0 0; color: var(--muted); font-size: 11px; }
 .modal__body { max-height: calc(88vh - 140px); padding: 20px 22px; overflow-y: auto; }
 .modal__footer { display: flex; justify-content: flex-end; gap: 8px; padding: 13px 22px; border-top: 1px solid var(--border); background: #f8faf8; }
+.expiry-notice { margin: 0; color: var(--text); font-size: 13px; line-height: 1.7; }
+.expiry-status { margin: 13px 0 0; padding: 9px 10px; border-left: 3px solid #7a9c8d; color: #4e6258; background: #f1f6f3; font-size: 12px; line-height: 1.5; }
+.settings-form { display: grid; gap: 16px; }
 .settings-option { display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 74px; padding: 14px 2px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); cursor: pointer; }
 .settings-option__copy { display: flex; min-width: 0; flex-direction: column; gap: 6px; }
 .settings-option__copy strong { color: var(--text); font-size: 13px; }

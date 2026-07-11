@@ -1,5 +1,6 @@
 import { Database, LoaderCircle, ShieldCheck } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { isApplicationExpired } from '../../shared/availability'
 import type { AppSettings, FieldMapping, ImportKind, PickedImport, ReleaseInfo } from '../../shared/types'
 import { AboutDialog } from './components/AboutDialog'
 import { CreateOrderDialog } from './components/CreateOrderDialog'
@@ -11,16 +12,21 @@ import { Sidebar } from './components/Sidebar'
 import { StatsStrip } from './components/StatsStrip'
 import { WorkflowToolbar } from './components/WorkflowToolbar'
 import { WorkspaceHeader } from './components/WorkspaceHeader'
+import { VersionExpiredDialog } from './components/VersionExpiredDialog'
 import { useTraceMatch } from './hooks/useTraceMatch'
 
 interface MappingRequest { kind: ImportKind; picked: PickedImport }
 
 export default function App() {
+  return isApplicationExpired() ? <VersionExpiredDialog /> : <TraceMatchWorkspace />
+}
+
+function TraceMatchWorkspace() {
   const store = useTraceMatch()
   const [newOrderNumber, setNewOrderNumber] = useState<string | null>(null)
   const [showSettings, setShowSettings] = useState(false)
   const [showAbout, setShowAbout] = useState(false)
-  const [appSettings, setAppSettings] = useState<AppSettings>({ pinAbnormalResults: true })
+  const [appSettings, setAppSettings] = useState<AppSettings>({ pinAbnormalResults: true, defaultOperator: '211' })
   const [mappingRequest, setMappingRequest] = useState<MappingRequest | null>(null)
   const [startupRelease, setStartupRelease] = useState<ReleaseInfo | null>(null)
 
@@ -74,7 +80,7 @@ export default function App() {
     try {
       const saved = await window.traceMatch.settings.update(settings)
       setAppSettings(saved)
-      store.setStatus(saved.pinAbnormalResults ? '已开启：比对异常结果置顶。' : '已关闭：比对结果按扫描时间显示。')
+      store.setStatus(`设置已保存：默认操作员 ${saved.defaultOperator}。`)
       return true
     } catch (error) {
       window.alert(`设置保存失败\n\n${error instanceof Error ? error.message : String(error)}`)
@@ -106,7 +112,7 @@ export default function App() {
         </footer>
       </main>
 
-      {newOrderNumber ? <CreateOrderDialog initialOrderNumber={newOrderNumber} onClose={() => setNewOrderNumber(null)} onCreate={store.createOrder} /> : null}
+      {newOrderNumber ? <CreateOrderDialog initialOrderNumber={newOrderNumber} defaultOperator={appSettings.defaultOperator} onClose={() => setNewOrderNumber(null)} onCreate={store.createOrder} /> : null}
       {showSettings ? <SettingsDialog settings={appSettings} onClose={() => setShowSettings(false)} onSave={saveSettings} /> : null}
       {showAbout ? <AboutDialog onClose={() => setShowAbout(false)} /> : null}
       {mappingRequest ? <MappingDialog kind={mappingRequest.kind} fileName={mappingRequest.picked.fileName} table={mappingRequest.picked.table}

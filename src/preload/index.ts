@@ -5,7 +5,8 @@ const api: TraceMatchApi = {
   app: {
     getVersion: () => ipcRenderer.invoke('app:version'),
     openExternal: (url) => ipcRenderer.invoke('app:open-external', url),
-    copyText: (text) => ipcRenderer.invoke('app:copy-text', text)
+    copyText: (text) => ipcRenderer.invoke('app:copy-text', text),
+    quit: () => ipcRenderer.invoke('app:quit')
   },
   orders: {
     list: () => ipcRenderer.invoke('orders:list'),
